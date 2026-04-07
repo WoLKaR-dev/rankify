@@ -1,0 +1,41 @@
+name: rankify
+description: ""
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  wolkarutils: 
+    git: 
+      url: "https://github.com/wolkar-dev/wolkarutils.git"
+  http: ^1.6.0
+  tflite_web: ^0.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/fonts/
+    - assets/data/
+    - assets/models/
+
+  fonts: 
+    - family: "Outfit"
+      fonts:
+        - asset: "assets/fonts/regular.ttf"
+          weight: 500
+        - asset: "assets/fonts/semi.ttf"
+          weight: 600
+        - asset: "assets/fonts/bold.ttf"
+          weight: 700
