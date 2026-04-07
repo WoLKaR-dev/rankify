@@ -48,7 +48,8 @@ class AiService {
     try {
       await TFLiteWeb.initializeUsingCDN();
       await _loadMappings();
-      _model = await TFLiteModel.fromUrl("assets/models/draft_model.tflite");
+      final modelData = await rootBundle.load("assets/models/draft_model.tflite");
+      _model = await TFLiteModel.fromMemory(modelData.buffer.asUint8List());
     } catch (e) {
       debugPrint('Error ocurred initializing ai: $e');
     }

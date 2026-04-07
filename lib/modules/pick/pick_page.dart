@@ -243,32 +243,38 @@ class _PickPageState extends State<PickPage> {
       ),
 
       //SECTION Total probability table
-      Text("Table of Probabilities").h4(),
-      Table(
-        border: TableBorder.all(color: colorPallete.outline),
-        children: [
-          TableRow(
-            decoration: BoxDecoration(color: colorPallete.secondaryFixed),
-            children: [
-              Center(child: Text("Name").h6()),
-              Center(child: Text("Probability").h6()),
-            ],
-          ),
-          ...List.generate(predicts.length, (index) {
-            final brawler = predicts[index];
-            return TableRow(
-              decoration: BoxDecoration(
-                color: index.isEven
-                    ? colorPallete.surfaceContainer
-                    : colorPallete.surfaceContainerHighest,
-              ),
+      Text("Table of Preferences (not winrate!)").h4(),
+      SizedBox(
+        width: switch (WolkarUtils.instance.screenSize) {
+          ScreenSize.small || ScreenSize.regular => double.infinity,
+          ScreenSize.large => MediaQuery.sizeOf(context).width * 0.7,
+          ScreenSize.xlarge => MediaQuery.sizeOf(context).width * 0.4,
+          ScreenSize.xxlarge => MediaQuery.sizeOf(context).width * 0.3,
+        },
+        child: Table(
+          border: TableBorder.all(color: colorPallete.outline),
+          children: [
+            TableRow(
+              decoration: BoxDecoration(color: colorPallete.secondaryFixed),
               children: [
-                Center(child: Text(brawler.$3).p()),
-                Center(child: Text(brawler.$4.toStringAsFixed(2)).p()),
+                Center(child: Text("Name").h6()),
               ],
-            );
-          }),
-        ],
+            ),
+            ...List.generate(predicts.length, (index) {
+              final brawler = predicts[index];
+              return TableRow(
+                decoration: BoxDecoration(
+                  color: index.isEven
+                      ? colorPallete.surfaceContainer
+                      : colorPallete.surfaceContainerHighest,
+                ),
+                children: [
+                  Center(child: Text(brawler.$3).p()),
+                ],
+              );
+            }),
+          ],
+        ),
       ),
     ];
 
