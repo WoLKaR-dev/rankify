@@ -1,0 +1,33 @@
+name: Deploy web # Workflow name
+on:
+  workflow_dispatch: # Trigger on pressed
+
+jobs:
+  build_flutter: # work name
+    runs-on: ubuntu-latest #os
+    steps: 
+      - name: Obtaining code
+        uses: actions/checkout@v4 # does a copy of the repo
+
+      - name: Installing Flutter
+        uses: subosito/flutter-action@v2 # installs flutter
+        with:
+          channel: stable
+
+      - name: Building web # builds web
+        run: flutter build web --release --base-href /rankify/
+
+      - name: Saving data #saving exports
+        uses: actions/upload-artifact@v4
+        with:
+          name: rankify-web # folder name
+          path: build/web # saving directory
+      
+      - name: Deploying changes # uploades it into a branch
+        uses: JamesIves/github-pages-deploy-action@v4 
+        with: 
+          folder: build/web # uploading directory files
+          branch: web # branch
+          token: ${{ secrets.GITHUB_TOKEN }} # security token
+
+# Importante: Settings > general > actions > workflow permissions > read and write.  
