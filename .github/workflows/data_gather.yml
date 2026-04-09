@@ -26,7 +26,8 @@ jobs:
         
       - name: Execute gather
         run: python3 data_gather.py
-        env: ${{ secrets.BS_API_KEY }}
+        env: 
+          BS_API_KEY: ${{ secrets.BS_API_KEY }}
       
       - name: Commit & Push
         run: |
