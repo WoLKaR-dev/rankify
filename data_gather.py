@@ -1,11 +1,9 @@
 from time import sleep
 from typing import Any
 import os
-from dotenv import load_dotenv
 import requests
 import csv
 
-load_dotenv()  # loads env variables
 
 # token
 token = os.getenv("BS_API_KEY")
