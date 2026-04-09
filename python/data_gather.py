@@ -152,6 +152,7 @@ def addMatchToCSV(matchMatrix: list[Any]):
 
 ranking = getRankingPlayers()  # get ranking
 counter = 1 # number of player (visual purpose only)
+writtenMatchCounter = 0
 
 for player in ranking:
     name: str = player["name"]  # just visual for terminal only
@@ -161,6 +162,7 @@ for player in ranking:
     tag: str = player["tag"]  # get tag
 
     log = getPlayerBattleLog(tag)  # get log from tag
+
 
     for battle in log:
         # print(f"Battle found: {battle}")
@@ -180,6 +182,7 @@ for player in ranking:
 
                     if not exists:
                         addMatchToCSV(processedBattle)  # simply adds the formated data
+                        writtenMatchCounter += 1
 
         except Exception:
             pass
@@ -187,4 +190,4 @@ for player in ranking:
     counter += 1
     sleep(0.1)
 
-print("Data gather ended. ")
+print(f"Data gather ended. ${writtenMatchCounter} new matches added. ")

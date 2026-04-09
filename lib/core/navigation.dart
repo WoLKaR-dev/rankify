@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rankify/core/theme.dart';
 import 'package:rankify/modules/home/home_page.dart';
 import 'package:rankify/modules/pick/pick_page.dart';
+import 'package:rankify/modules/settings/settings_page.dart';
 import 'package:wolkarutils/wolkarutils.dart';
 
 class NavigationPage extends StatefulWidget {
@@ -18,7 +19,7 @@ class _NavigationPageState extends State<NavigationPage> {
   List<String> appBarTitles = ["Home", "Ranked", "Settings"];
 
   // App screens
-  List<Widget> pages = [HomePage(), PickPage(), HomePage()];
+  List<Widget> pages = [HomePage(), PickPage(), SettingsPage()];
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +93,10 @@ class _NavigationPageState extends State<NavigationPage> {
     );
 
     //WRAPPER Main Structure
-    return Scaffold(appBar: appbar, bottomNavigationBar: navBar, body: page);
+    return Scaffold(
+      appBar: appbar,
+      bottomNavigationBar: navBar,
+      body: page,
+    );
   }
 }

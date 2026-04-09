@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rankify/modules/home/home_style.dart';
 import 'package:wolkarutils/wolkarutils.dart';
 
 class HomePage extends StatefulWidget {
@@ -10,8 +11,18 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    //ATOMS Picker
+    //ATOMS Home card
+    final mainCards = Wrap(
+      direction: Axis.horizontal,
+      children: [
+        BigHomeCard(),
+        Column(children: [SmallHomeCard(), SmallHomeCard()]),
+      ],
+    );
 
-    return Scaffold(body: Background(child: SizedBox()));
+    //LAYOUT Page
+    final page = Background(child: Scroll(children: [mainCards]));
+
+    return Scaffold(body: page);
   }
 }

@@ -32,7 +32,7 @@ class PickableCard extends StatelessWidget {
                 borderRadius: BorderRadiusGeometry.circular(10),
                 child: Image.network(brawlerRecord.$2),
               ),
-              Text(brawlerRecord.$3).h5(),
+              Expanded(child: Text(brawlerRecord.$3).h5()),
             ],
           ),
         ),
@@ -64,11 +64,13 @@ class MapPickableCard extends StatelessWidget {
             border: Border.all(color: colorPallete.outline),
           ),
           padding: EdgeInsets.all(5),
-          child: Scroll(
+          child: Column(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadiusGeometry.circular(10),
-                child: Image.network(map.$2),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadiusGeometry.circular(10),
+                  child: Image.network(map.$2),
+                ),
               ),
               Text(map.$3).p(),
             ],
@@ -83,12 +85,10 @@ class PickedBrawlerCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onLongTap;
   final bool isAlly;
-  final bool selected;
   final (String, String, String)? brawler;
   const PickedBrawlerCard({
     super.key,
     required this.brawler,
-    required this.selected,
     required this.isAlly,
     required this.onTap,
     required this.onLongTap,
@@ -107,12 +107,18 @@ class PickedBrawlerCard extends StatelessWidget {
               border: Border.all(
                 strokeAlign: BorderSide.strokeAlignInside,
                 color: isAlly ? Colors.blue : Colors.red,
-                width: selected ? 6 : 2,
+                width: 2,
               ),
             ),
             padding: EdgeInsets.all(5),
             child: SizedBox.square(
-              dimension: 150,
+              dimension: switch (WolkarUtils.instance.screenSize) {
+                ScreenSize.small => 70,
+                ScreenSize.regular => 90,
+                ScreenSize.large => 90,
+                ScreenSize.xlarge => 120,
+                ScreenSize.xxlarge => 130,
+              },
               child: brawler != null
                   ? ClipRRect(
                       borderRadius: BorderRadiusGeometry.circular(10),
@@ -122,11 +128,50 @@ class PickedBrawlerCard extends StatelessWidget {
             ),
           ),
         ),
-        if (brawler != null) Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: IconButton( onPressed: onLongTap, icon: Icon(Icons.delete), style: IconButton.styleFrom(backgroundColor: colorPallete.error, foregroundColor: colorPallete.onError),),
-        ),
+        if (brawler != null)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: IconButton(
+              onPressed: onLongTap,
+              icon: Icon(Icons.delete),
+              style: IconButton.styleFrom(
+                backgroundColor: colorPallete.error,
+                foregroundColor: colorPallete.onError,
+              ),
+            ),
+          ),
       ],
+    );
+  }
+}
+
+class PredictedBrawlerCard extends StatelessWidget {
+  final (String, String, String, double) predict;
+  const PredictedBrawlerCard({super.key, required this.predict});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: colorPallete.outline),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(5),
+        child: SizedBox.square(
+          dimension: switch(WolkarUtils.instance.screenSize){
+          ScreenSize.small => 70,
+          ScreenSize.regular => 90,
+          ScreenSize.large => 110,
+          ScreenSize.xlarge => 140,
+          ScreenSize.xxlarge => 160,
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadiusGeometry.circular(10),
+            child: Image.network(fit: BoxFit.fill,  predict.$2),
+          ),
+        ),
+      ),
     );
   }
 }

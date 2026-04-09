@@ -45,7 +45,11 @@ cd python
 
 To keep the environment isolated, create a virtual environment by running: 
 ```bash
+# Windows
 python -m venv .venv
+
+# Linux / Mac
+python3 -m venv .venv
 ```
 
 Then, activate it: 

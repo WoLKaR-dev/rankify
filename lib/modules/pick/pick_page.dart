@@ -5,6 +5,7 @@ import 'package:rankify/modules/pick/pick_code.dart';
 import 'package:rankify/modules/pick/pick_styles.dart';
 import 'package:wolkarutils/wolkarutils.dart';
 
+/// It's the screen where the user will be able to select the map and the brawlers.
 class PickPage extends StatefulWidget {
   const PickPage({super.key});
   @override
@@ -24,17 +25,17 @@ class _PickPageState extends State<PickPage> {
   /// Represents picking phases. `0` when selecting maps, `1` when picking brawlers.
   int phase = 0;
 
-  //STATE Picked brawlers
-  /// A list of picked brawlers, where the position `0` is ally1 and `5` is enemy3.
-  List<(String, String, String)?> pickedBrawlers = List.generate(6, (index) => null);
+  //STATE Ally brawlers
+  /// A list of ally brawlers.
+  List<(String, String, String)?> allyBrawlers = List.generate(3, (index) => null);
+
+  //STATE Enemy brawlers
+  /// A list of enemy brawlers.
+  List<(String, String, String)?> enemyBrawlers = List.generate(3, (index) => null);
 
   //STATE Picked map
   /// Picked map of phase 0.
   (String, String, String)? pickedMap;
-
-  //STATE Selected slot
-  /// Player selected slot. `0` = Ally1, ..., `5` = Enemy3
-  int selectedSlot = 0;
 
   //LOGIC Advance from phase
   /// Advance the current phase ensuring that the required information was
@@ -42,10 +43,13 @@ class _PickPageState extends State<PickPage> {
   void advancePhase() async {
     if (phase == 0) {
       if (pickedMap != null) {
+        predicts = await predictGame(pickedMap!, [...allyBrawlers, ...enemyBrawlers.reversed]);
+        predicts.sort((a, b) => b.$4.compareTo(a.$4));
         setState(() {
           phase = 1;
           filterController.text = "";
         });
+        if (!mounted) return;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("Enter your allies and enemies picks! ").h6()));
@@ -54,22 +58,12 @@ class _PickPageState extends State<PickPage> {
           context,
         ).showSnackBar(SnackBar(content: Text("Select a map to advance to next phase").h6()));
       }
-    } else if (phase == 1) {
-      List<(String, String, String, double)> predictions = await predictGame(
-        pickedMap!,
-        pickedBrawlers,
-      );
-      setState(() {
-        phase = 2;
-        predicts = predictions;
-        predicts.sort((brawler1, brawler2) => brawler2.$4.compareTo(brawler1.$4));
-      });
     } else {
       setState(() {
         phase = 0;
-        predicts = [];
         pickedMap = null;
-        pickedBrawlers = List.generate(6, (index) => null);
+        allyBrawlers = List.generate(3, (index) => null);
+        enemyBrawlers = List.generate(3, (index) => null);
         filterController.text = "";
       });
     }
@@ -77,11 +71,11 @@ class _PickPageState extends State<PickPage> {
 
   @override
   Widget build(BuildContext context) {
-    //ATOMS FAb
+    //ATOMS FAB
     final fab = FloatingActionButton.extended(
       onPressed: advancePhase,
-      label: Text(phase == 1 ? "My Turn!" : "Next phase").p(),
-      icon: Icon(phase == 1 ? Icons.play_arrow_rounded : Icons.arrow_forward),
+      label: Text(phase == 1 ? "Next Match!" : "Next phase").p(),
+      icon: Icon(phase == 1 ? Icons.arrow_forward_rounded : Icons.arrow_forward),
     );
 
     //ATOMS Filter options
@@ -99,53 +93,12 @@ class _PickPageState extends State<PickPage> {
       ),
     ];
 
-    //ATOMS Brawler picker
-    final brawlerPicker = [
-      SizedBox(
-        height: 600,
-        child: Scroll(
-          scrollDirection: Axis.horizontal,
-          children: [
-            GridView.count(
-              childAspectRatio: 0.5,
-              shrinkWrap: true,
-              crossAxisCount: 3,
-              scrollDirection: Axis.horizontal,
-              children: [
-                ...List.generate(
-                  BrawlService.instance.brawlers
-                      .where(
-                        (b) => b.$3.toLowerCase().contains(filterController.text.toLowerCase()),
-                      )
-                      .length,
-                  (index) {
-                    (String, String, String) brawler = BrawlService.instance.brawlers
-                        .where(
-                          (b) => b.$3.toLowerCase().contains(filterController.text.toLowerCase()),
-                        )
-                        .toList()[index];
-                    return PickableCard(
-                      available: !pickedBrawlers.contains(brawler),
-                      brawlerRecord: brawler,
-                      onTap: () {
-                        setState(() {
-                          pickedBrawlers[selectedSlot] = brawler;
-                        });
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    ];
-
     //ATOMS Map Picker
     final mapPicker = [
       SizedBox(
-        height: 700,
+        height: [ScreenSize.small, ScreenSize.regular].contains(WolkarUtils.instance.screenSize)
+            ? 600
+            : 700,
         child: Scroll(
           scrollDirection: Axis.horizontal,
           children: [
@@ -189,25 +142,84 @@ class _PickPageState extends State<PickPage> {
     //ATOMS Team picker
     final teamPicker = [
       Wrap(
+        runAlignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        runSpacing: 5,
         spacing: 5,
         children: [
-          ...List.generate(pickedBrawlers.length, (index) {
-            final brawler = pickedBrawlers[index];
+          ...List.generate(allyBrawlers.length, (index) {
+            final brawler = allyBrawlers[index];
             return GestureDetector(
               child: PickedBrawlerCard(
                 onTap: () {
-                  setState(() {
-                    selectedSlot = index;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BrawlerSelectionPage(
+                        allyBrawlers: allyBrawlers,
+                        enemyBrawlers: enemyBrawlers,
+                        filterController: filterController,
+                      ),
+                    ),
+                  ).then((value) async {
+                    allyBrawlers[index] = value;
+                    predicts = await predictGame(pickedMap!, [
+                      ...allyBrawlers,
+                      ...enemyBrawlers.reversed,
+                    ]);
+                    predicts.sort((a, b) => b.$4.compareTo(a.$4));
+                    setState(() {});
                   });
                 },
-                onLongTap: () {
-                  setState(() {
-                    pickedBrawlers[index] = null;
-                  });
+                onLongTap: () async {
+                  allyBrawlers[index] = null;
+                  predicts = await predictGame(pickedMap!, [
+                    ...allyBrawlers,
+                    ...enemyBrawlers.reversed,
+                  ]);
+                  predicts.sort((a, b) => b.$4.compareTo(a.$4));
+                  setState(() {});
                 },
                 brawler: brawler,
-                selected: selectedSlot == index,
-                isAlly: index <= 2,
+                isAlly: true,
+              ),
+            );
+          }),
+          ...List.generate(enemyBrawlers.length, (index) {
+            final brawler = enemyBrawlers[index];
+            return GestureDetector(
+              child: PickedBrawlerCard(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BrawlerSelectionPage(
+                        allyBrawlers: allyBrawlers,
+                        enemyBrawlers: enemyBrawlers,
+                        filterController: filterController,
+                      ),
+                    ),
+                  ).then((value) async {
+                    enemyBrawlers[index] = value;
+                    predicts = await predictGame(pickedMap!, [
+                      ...allyBrawlers,
+                      ...enemyBrawlers.reversed,
+                    ]);
+                    predicts.sort((a, b) => b.$4.compareTo(a.$4));
+                    setState(() {});
+                  });
+                },
+                onLongTap: () async {
+                  enemyBrawlers[index] = null;
+                  predicts = await predictGame(pickedMap!, [
+                    ...allyBrawlers,
+                    ...enemyBrawlers.reversed,
+                  ]);
+                  predicts.sort((a, b) => b.$4.compareTo(a.$4));
+                  setState(() {});
+                },
+                brawler: brawler,
+                isAlly: false,
               ),
             );
           }),
@@ -215,31 +227,251 @@ class _PickPageState extends State<PickPage> {
       ),
     ];
 
-    //ATOMS Predicted brawlers (best 5)
-    final predictedBrawlerVisuals = [
-      //SECTION Top 5
-      Text("Top 5 picks").h3(),
+    //ATOMS AI runtime predictions section
+    final runtimePredictionsSection = [
+      Text("Runtime Predictions").h3(),
+      Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 5,
+        children: [
+          Text("Best 5 brawlers").h4(),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorPallete.primary,
+              foregroundColor: colorPallete.onPrimary,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PredictionsPage(
+                    pickedMap: pickedMap!,
+                    allyBrawlers: allyBrawlers,
+                    enemyBrawlers: enemyBrawlers,
+                  ),
+                ),
+              );
+            },
+            label: Text("See All"),
+            icon: Icon(Icons.table_chart),
+          ),
+        ],
+      ),
+      Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 5,
+        runSpacing: 5,
+        children: [
+          ...List.generate(predicts.isNotEmpty ? 5 : 0, (index) {
+            final predict = predicts[index];
+            return PredictedBrawlerCard(predict: predict);
+          }),
+        ],
+      ),
+    ];
+
+    //LAYOUT Map Picker page
+    final mapPickerPage = Background(
+      padding: EdgeInsets.all(15),
+      child: Scroll(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [...filterOptions, ...mapPicker],
+      ),
+    );
+
+    //LAYOUT Teammates picker
+    /// It's the screen where the user selects the brawlers of the team.
+    final teammatesPickerPage = Background(
+      padding: EdgeInsets.all(15),
+      child: Scroll(
+        spacing: 15,
+        children: [Text("Time to pick!").h3(), ...teamPicker, ...runtimePredictionsSection],
+      ),
+    );
+
+    //LAYOUT Main page
+    final page = switch (phase) {
+      0 => mapPickerPage,
+      1 => teammatesPickerPage,
+      _ => mapPickerPage,
+    };
+
+    //WRAPPER Brawler wrapper
+    return Scaffold(body: page, floatingActionButton: fab);
+  }
+}
+
+/// It's the screen where the user selects the brawlers of the team.
+///
+/// [allyBrawlers] The brawlers of the team.
+/// [enemyBrawlers] The brawlers of the enemy team.
+/// [filterController] The controller of the filter.
+///
+/// Returns the picked brawler when the user taps on a brawler.
+class BrawlerSelectionPage extends StatefulWidget {
+  const BrawlerSelectionPage({
+    super.key,
+    required this.allyBrawlers,
+    required this.enemyBrawlers,
+    required this.filterController,
+  });
+  final List<(String, String, String)?> allyBrawlers;
+  final List<(String, String, String)?> enemyBrawlers;
+  final TextEditingController filterController;
+  @override
+  State<BrawlerSelectionPage> createState() => _BrawlerSelectionPageState();
+}
+
+class _BrawlerSelectionPageState extends State<BrawlerSelectionPage> {
+  @override
+  Widget build(BuildContext context) {
+    //ATOMS Appbar
+    final AppBar appBar = AppBar(title: Text("Select Brawlers"));
+
+    //ATOMS Filter options
+    final filterOptions = [
+      Row(
+        children: [
+          Input(
+            controller: widget.filterController,
+            dialog: true,
+            onChange: (_) {
+              setState(() {});
+            },
+          ),
+        ],
+      ),
+    ];
+
+    //ATOMS Brawler picker
+    final brawlerPicker = [
       SizedBox(
-        height: 200,
+        height: switch (WolkarUtils.instance.screenSize) {
+          ScreenSize.small => 500,
+          ScreenSize.regular => 500,
+          ScreenSize.large => 500,
+          ScreenSize.xlarge => 600,
+          ScreenSize.xxlarge => 600,
+        },
         child: Scroll(
           scrollDirection: Axis.horizontal,
           children: [
             GridView.count(
-              crossAxisCount: 1,
+              childAspectRatio: 0.5,
               shrinkWrap: true,
+              crossAxisCount: 3,
               scrollDirection: Axis.horizontal,
               children: [
-                ...List.generate(predicts.isNotEmpty ? 5 : 0, (index) {
-                  final brawler = predicts[index];
-                  return Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Image.network(brawler.$2),
-                  );
-                }),
+                ...List.generate(
+                  BrawlService.instance.brawlers
+                      .where(
+                        (b) =>
+                            b.$3.toLowerCase().contains(widget.filterController.text.toLowerCase()),
+                      )
+                      .length,
+                  (index) {
+                    (String, String, String) brawler = BrawlService.instance.brawlers
+                        .where(
+                          (b) => b.$3.toLowerCase().contains(
+                            widget.filterController.text.toLowerCase(),
+                          ),
+                        )
+                        .toList()[index];
+                    return PickableCard(
+                      available: ![
+                        ...widget.allyBrawlers,
+                        ...widget.enemyBrawlers,
+                      ].contains(brawler),
+                      brawlerRecord: brawler,
+                      onTap: () {
+                        Navigator.pop(context, brawler);
+                      },
+                    );
+                  },
+                ),
               ],
             ),
           ],
         ),
+      ),
+    ];
+
+    //LAYOUT Brawler picker page
+    final brawlerPickerPage = Scaffold(
+      body: Background(
+        padding: EdgeInsets.all(15),
+        child: Scroll(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          scrollDirection: Axis.vertical,
+          children: [...filterOptions, ...brawlerPicker],
+        ),
+      ),
+    );
+
+    return Scaffold(appBar: appBar, body: brawlerPickerPage);
+  }
+}
+
+/// It's the screen where the user will be able to see Ai predictions
+///
+/// [pickedMap] The map selected by the user.
+/// [allyBrawlers] The brawlers of the team.
+/// [enemyBrawlers] The brawlers of the enemy team.
+class PredictionsPage extends StatefulWidget {
+  const PredictionsPage({
+    super.key,
+    required this.pickedMap,
+    required this.allyBrawlers,
+    required this.enemyBrawlers,
+  });
+  final (String, String, String) pickedMap;
+  final List<(String, String, String)?> allyBrawlers;
+  final List<(String, String, String)?> enemyBrawlers;
+  @override
+  State<PredictionsPage> createState() => _PredictionsPageState();
+}
+
+class _PredictionsPageState extends State<PredictionsPage> {
+  //STATE List of predicts
+  /// List of predicts
+  List<(String, String, String, double)> predicts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    makePrediction();
+  }
+
+  Future<void> makePrediction() async {
+    predicts = await predictGame(widget.pickedMap, [
+      ...widget.allyBrawlers,
+      ...widget.enemyBrawlers.reversed,
+    ]);
+    predicts.sort((brawler1, brawler2) => brawler2.$4.compareTo(brawler1.$4));
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    //ATOMS AppBar
+    final AppBar appBar = AppBar(title: Text("See Predictions"));
+
+    //ATOMS Predicted brawlers (best 5)
+    final predictedBrawlerVisuals = [
+      //SECTION Top 5
+      Text("Top 5 picks").h3(),
+      Wrap(
+        runAlignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        runSpacing: 5,
+        spacing: 5,
+        children: [
+          ...List.generate(predicts.isNotEmpty ? 5 : 0, (index) {
+            final brawler = predicts[index];
+            return PredictedBrawlerCard(predict: brawler);
+          }),
+        ],
       ),
 
       //SECTION Total probability table
@@ -258,6 +490,7 @@ class _PickPageState extends State<PickPage> {
               decoration: BoxDecoration(color: colorPallete.secondaryFixed),
               children: [
                 Center(child: Text("Name").h6()),
+                Center(child: Text("Probability").h6()),
               ],
             ),
             ...List.generate(predicts.length, (index) {
@@ -270,6 +503,7 @@ class _PickPageState extends State<PickPage> {
                 ),
                 children: [
                   Center(child: Text(brawler.$3).p()),
+                  Center(child: Text((brawler.$4 * 100).toStringAsFixed(2)).p()),
                 ],
               );
             }),
@@ -278,24 +512,8 @@ class _PickPageState extends State<PickPage> {
       ),
     ];
 
-    //LAYOUT Main page
-    final brawlerPickerPage = Background(
-      padding: EdgeInsets.all(15),
-      child: Scroll(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        scrollDirection: Axis.vertical,
-        children: [...filterOptions, ...brawlerPicker, ...teamPicker],
-      ),
-    );
-
-    //LAYOUT Map Picker page
-    final mapPickerPage = Background(
-      padding: EdgeInsets.all(15),
-      child: Scroll(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [...filterOptions, ...mapPicker],
-      ),
-    );
+    //LAYOUT Loading page
+    final loadingPage = Background(child: Center(child: CircularProgressIndicator()));
 
     //LAYOUT Results page
     final predictsPage = Background(
@@ -304,14 +522,9 @@ class _PickPageState extends State<PickPage> {
     );
 
     //LAYOUT Main page
-    final page = switch (phase) {
-      0 => mapPickerPage,
-      1 => brawlerPickerPage,
-      2 => predictsPage,
-      _ => predictsPage,
-    };
+    final page = predicts.isEmpty ? loadingPage : predictsPage;
 
-    //WRAPPER Brawler wrapper
-    return Scaffold(body: page, floatingActionButton: fab);
+    //WRAPPER
+    return Scaffold(body: page, appBar: appBar);
   }
 }
