@@ -10,7 +10,7 @@ class SettingsService {
   static final SettingsService _instance = SettingsService._internal();
 
   /// Active speech mode
-  SpeechMode _mode = SpeechMode.aggro;
+  SpeechMode _mode = SpeechMode.pro;
 
   /// Class notifier
   final SettingsNotifier _notifier = SettingsNotifier();

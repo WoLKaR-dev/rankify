@@ -31,7 +31,7 @@ class BigHomeCard extends StatelessWidget {
               ),
             ),
           ),
-          Text((text)).h3(),
+          Text((text)).h4(),
         ],
       ),
     );
@@ -56,21 +56,26 @@ class SmallHomeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         border: Border.all(color: colorPallete.outline),
       ),
-      child: Row(
-        spacing: 10,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Flexible(
-            flex: 2,
-            child: IntrinsicHeight(
+      child: IntrinsicHeight(
+        child: Row(
+          spacing: 10,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Flexible(
+              flex: 4,
               child: ClipRRect(
                 borderRadius: BorderRadiusGeometry.circular(20),
-                child: Image.asset(image, scale: scale),
+                child: Image.asset(image, scale: scale, fit: BoxFit.cover,),
               ),
             ),
-          ),
-          Flexible(flex: 3, child: Text((text)).h5()),
-        ],
+            Flexible(flex: 5, child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text((text)).h6(),
+              ],
+            )),
+          ],
+        ),
       ),
     );
   }
