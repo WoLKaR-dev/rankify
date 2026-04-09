@@ -31,10 +31,10 @@ jobs:
       
       - name: Commit & Push
         run: |
-          git config global user.name = "Auto Gather"
-          git config global user.email = "action@github.com"
+          git config --global user.name "Auto Gather"
+          git config --global user.email "action@github.com"
           git add . 
-          git commit -m "Data Gathered."
+          git commit -m "Data gather ended" || true
           git push 
       
       - name: Upload Artifact
@@ -42,3 +42,17 @@ jobs:
         with: 
           name: training-data
           path: data.csv
+      
+      - name: Release data 
+        uses: softprops/action-gh-release@v2
+        with: 
+          tag_name: latest-data
+          name: "Latest Data"
+          body: |
+            This release is updated hourly. 
+            Last sync: ${{ github.event.repository.updated_at }}
+          files: data.csv
+          make_latest: true
+          overwrite: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
