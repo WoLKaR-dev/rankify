@@ -1,0 +1,1 @@
+ /mnt/1892BA0792B9E980/newho/Proyectos/Flutter/Rankify/app/rankify/build/12fd1242724ae522ef3bed89a46b8883/dart_build_result.json:  /home/wolkar/development/flutter/bin/cache/dart-sdk/version /mnt/1892BA0792B9E980/newho/Proyectos/Flutter/Rankify/app/rankify/.dart_tool/package_config.json /mnt/1892BA0792B9E980/newho/Proyectos/Flutter/Rankify/app/rankify/pubspec.yaml

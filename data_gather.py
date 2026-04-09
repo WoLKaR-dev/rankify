@@ -17,7 +17,7 @@ class Metronome:
         now = time.perf_counter()
 
         if self.nextCall < now :
-                self.nextCall = now
+            self.nextCall = now
 
         waitTime = self.nextCall - now 
 
