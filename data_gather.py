@@ -3,189 +3,181 @@ from typing import Any
 import os
 import requests
 import csv
+import asyncio
+
+class Metronome: 
+    """Acts as a metronome to add api call rate limit.
+    """
+
+    def __init__(self, interval):
+        self.interval = interval 
+        self.nextCall = time.perf_counter()
+
+    async def wait(self): 
+        now = time.perf_counter()
+
+        if self.nextCall < now :
+                self.nextCall = now
+
+        waitTime = self.nextCall - now 
+
+        self.nextCall += self.interval
+
+        if waitTime > 0: 
+            await asyncio.sleep(waitTime)
+
+
 
 
 # token
 token = os.getenv("BS_API_KEY")
-
 # create header
 header = {
     "Authorization": f"Bearer {token}",
     "Accept": "application/json",
 }
-
+sem = asyncio.Semaphore(10) # creates async sem
+rithm = Metronome(0.11) # ~ 9 per second
 
 def getBattleData(battleData, playerId):
-    """Returns a processed player data, ready for csv.
-    If an error occurs, returns an empty list.
+    """Gets formatted battle data from a player
 
     Args:
-        battleData : main battle data.
-        playerId : local team's player id.
-    """
-
-    data = []
-
-    try:
-        battleMap = int(battleData["event"]["id"])  # Simply the battle map
-        battleResult = (
-            1 if battleData["battle"]["result"] == "victory" else 0
-        )  # Battle result
-        battleTime = battleData["battleTime"]
-        teams = battleData["battle"][
-            "teams"
-        ]  # Battle teams. Usually: [ [plr1, ..., plr3], [plr4, ..., plr6] ]
-
-        data = [battleMap, battleResult]  # reasign data
-
-        teamsData = []  # format: { brawlers: [...], localTeam: bool }
-
-        for team in teams:  # processing teams
-            teamData = {"brawlers": [], "localTeam": False}  # init format
-
-            for player in team:  # processing each player of the team
-                isHostingGame = (
-                    player["tag"] == playerId
-                )  # check if the player is the host
-
-                if isHostingGame:
-                    teamData["localTeam"] = True  # flags the host if true
-
-                brawler = int(player["brawler"]["id"])
-
-                teamData["brawlers"].append(brawler)  # adds brawler
-
-            teamsData.append(teamData)  # add team data
-
-        # sorting list so host team gets first position
-        teamsData.sort(key=lambda x: x["localTeam"], reverse=True)
-
-        # add hoster brawlers first
-        for team in teamsData:
-            for brawler in team["brawlers"]:
-                data.append(brawler)  # adds brawlers
-
-        data.append(battleTime)  # adding timestamp
-
-        return data
-
-    except Exception:
-        print("An error ocurred getting battle data")
-        return data
-
-def getRankingPlayers():
-    """Gets brawl stars main global ranking (trophies.)"""
-    players = []  # total players
-
-    # main country codes
-    countryCodes = ["global", "es", "jp", "it", "de", "fr", "ru", "us", "kr", "gb"]
-
-    for code in countryCodes:
-        #fetch data
-        result = requests.get(
-            f"https://bsproxy.royaleapi.dev/v1/rankings/{code}/players", headers=header
-        )
-        if result.status_code == 200:
-            try:
-                data = result.json()
-
-                rankingPlayers = data["items"]
-
-                for player in rankingPlayers: 
-                    players.append(player)
-
-            except Exception:
-                pass
-        sleep(0.1)
-        
-    print(f"Obtained data from {len(players)} players.")
-
-    return players
-
-def getPlayerBattleLog(tag: str):
-    """Gets player battle log from a player tag.
-
-    Args:
-        tag (str): Player tag, including the `#` character.
-    """
-    tag = tag.replace("#", "%23")  # important to replace critic characters
-    playerLogRequest = requests.get(
-        "https://bsproxy.royaleapi.dev/v1/players/" + tag + "/battlelog",
-        headers=header,
-    )  # making the request
-    if playerLogRequest.status_code == 200:  # checking the status
-        # print("Battle log obtained successfully")
-        playerLogJSON = playerLogRequest.json()
-        playerLog = playerLogJSON["items"]
-        return playerLog  # returning log.
-    else:
-        # print(f"Battle log error: {playerLogRequest.status_code} ")
-        return []
-
-def isMatchRepeated(matchMatrix: list[Any]):
-    """Inspects every line of `data.csv`, ensuring that the match does
-    not extist.
-
-    Args:
-        matchMatrix (list[Any]): The `getBattleData` returned matrix.
+        battleData : Player data to format
+        playerId : Player ID to organize teams as if local
 
     Returns:
-        bool: `true` if exists, `false` if not.
+        _type_: _description_
     """
+    try:
+        battleMap = int(battleData["event"]["id"]) # gets battle map id (...)
+        battleResult = 1 if battleData["battle"]["result"] == "victory" else 0 # gets result (1 or 0)
+        battleTime = battleData["battleTime"] # gets battle time
+        teams = battleData["battle"]["teams"] # gets teams
+        data = [battleMap, battleResult] # so far, adds map and result
+
+        teamsData = [] # variable in which save teams
+
+        for team in teams: 
+            teamData = {"brawlers": [], "localTeam": False} # generates template data
+            for player in team:
+                if player["tag"] == playerId: 
+                    teamData["localTeam"] = True # if the player has te host id, then the team is the hoster
+
+                teamData["brawlers"].append(int(player["brawler"]["id"])) # append the player brawler into team brawlers
+
+            teamsData.append(teamData) # appends data
+
+        teamsData.sort(key=lambda x: x["localTeam"], reverse=True) # sorts teams so host team goes first
+
+        for team in teamsData:
+            for brawler in team["brawlers"]: 
+                data.append(brawler) # append team brawlers in order
+
+        data.append(battleTime) # appends data
+        
+        return data # returns data
+    except Exception:
+        return []
+
+def isMatchRepeated(matchMatrix):
+    """Check if the match is repeated
+
+    Args:
+        matchMatrix (list[Any]): Match matrix
+
+    Returns:
+        bool: `True` if repeated, `False` if not. 
+    """
+    if not os.path.exists("data.csv"): 
+        return False # returns false if `data.csv` does not exists
+    
     with open("data.csv", "r", encoding="utf-8") as data:
         reader = csv.reader(data)
         for line in reader:
-            if (
-                str(line[0]) == str(matchMatrix[0])
-                and str(line[1]) == str(matchMatrix[1])
-                and str(line[8]) == str(matchMatrix[8])
-            ):
-                return True
-        return False
+            if len(line) >= 9 and str(line[0]) == str(matchMatrix[0]) and \
+               str(line[1]) == str(matchMatrix[1]) and str(line[8]) == str(matchMatrix[8]):
+                return True # returns true if any of the `data.csv` files contains same data. 
+            
+    return False # returns false by default
 
-def addMatchToCSV(matchMatrix: list[Any]):
+def addMatchToCSV(matchMatrix):
+    """Adds a new matrix to the CSV
+
+    Args:
+        matchMatrix : Matrix returned from `getBattleData()`
+    """
     with open("data.csv", "a", newline="", encoding="utf-8") as data:
         writer = csv.writer(data)
-        writer.writerow(matchMatrix)
+        writer.writerow(matchMatrix) # adds the row
 
-ranking = getRankingPlayers()  # get ranking
-counter = 1 # number of player (visual purpose only)
-writtenMatchCounter = 0
+def getRankingPlayers():
+    """Síncrona está bien porque solo son 10 llamadas al inicio."""
+    players = [] # all players
+    countryCodes = ["global", "es", "jp", "it", "de", "fr", "ru", "us", "kr", "gb", "mx", "pe", "tr", "ua", "pl", "ro", "ca", "nl"] # country codes to study
+    for code in countryCodes:
+        result = requests.get(f"https://bsproxy.royaleapi.dev/v1/rankings/{code}/players", headers=header) # result of the call
+        if result.status_code == 200:
+            players.extend(result.json().get("items", []))
+    return players
 
-for player in ranking:
-    name: str = player["name"]  # just visual for terminal only
+async def getPlayerBattleLog_async(session, tag):
+    """Gets matches from player
 
-    print(f"Gathering from: n{counter} - {name}")
+    Args:
+        session (): 
+        tag (string): Player tag
 
-    tag: str = player["tag"]  # get tag
+    Returns:
+        list[...]: Gets player matches
+    """
+    tag_url = tag.replace("#", "%23") # replaces tag
 
-    log = getPlayerBattleLog(tag)  # get log from tag
+    url = f"https://bsproxy.royaleapi.dev/v1/players/{tag_url}/battlelog" # creates url
 
+    async with session.get(url, headers=header) as response: # waits for the response
+        if response.status == 200:
+            data = await response.json()
+            await asyncio.sleep(0.1)
+            return data.get("items", []) # gets the item list or empty.
+        return []
+
+async def process_player(session, player, index):
+    tag = player["tag"]# player tag
+    name = player["name"] # get player name (visual only)
+    new_matches = 0 # create new matches counter 
+
+    await rithm.wait()
+
+    async with sem: # 10 concurrent battles
+        log = await getPlayerBattleLog_async(session, tag) # gets log
+        print(f"Gathering from: n{index} - {name}")
 
     for battle in log:
-        # print(f"Battle found: {battle}")
-
         try:
-            if battle["battle"]["type"] == "soloRanked":  # only solo ranked games
-                processedBattle: list[Any] = getBattleData(
-                    battle, tag
-                )  # get battle data formatted
-
-                # print(f"formatted battle: {processedBattle}")
-
-                if len(processedBattle) != 0:
-                    exists = isMatchRepeated(processedBattle)
-
-                    # print(f"battle status: exists: {exists}")
-
-                    if not exists:
-                        addMatchToCSV(processedBattle)  # simply adds the formated data
-                        writtenMatchCounter += 1
-
+            if battle.get("battle", {}).get("type") == "soloRanked":
+                processed = getBattleData(battle, tag)
+                if processed and not isMatchRepeated(processed):
+                    addMatchToCSV(processed)
+                    new_matches += 1
         except Exception:
-            pass
+            continue
+    return new_matches
 
-    counter += 1
-    sleep(0.1)
+async def main():
+    ranking = getRankingPlayers() # get ranking players
+    print(f"Obtained {len(ranking)} players. Starting async logs...")
+    
+    writtenMatchCounter = 0
+    
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for i, player in enumerate(ranking):
+            tasks.append(process_player(session, player, i + 1))
+        
+        results = await asyncio.gather(*tasks)
+        writtenMatchCounter = sum(results)
 
-print(f"Data gather ended. ${writtenMatchCounter} new matches added. ")
+    print(f"Data gather ended. {writtenMatchCounter} new matches added.")
+
+if __name__ == "__main__":
