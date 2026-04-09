@@ -1,9 +1,11 @@
-from time import sleep
 from typing import Any
 import os
 import requests
 import csv
 import asyncio
+import time
+import aiohttp
+
 
 class Metronome: 
     """Acts as a metronome to add api call rate limit.
