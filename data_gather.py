@@ -181,3 +181,4 @@ async def main():
     print(f"Data gather ended. {writtenMatchCounter} new matches added.")
 
 if __name__ == "__main__":
+    asyncio.run(main())
