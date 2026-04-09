@@ -13,15 +13,25 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     //ATOMS Home card
     final mainCards = Wrap(
+      spacing: 10,
       direction: Axis.horizontal,
       children: [
-        BigHomeCard(),
-        Column(children: [SmallHomeCard(), SmallHomeCard()]),
+        BigHomeCard(text: "It's high time you stopped losing.",),
+        Column(
+          spacing: 10,
+          children: [
+            SmallHomeCard(image: "assets/images/settings.png", text: "Personalize Rankify whatever you like.", scale: 2),
+            SmallHomeCard(image: "assets/images/logo.png", text: "Help mantaining Rankify an open source app.",),
+          ],
+        ),
       ],
     );
 
     //LAYOUT Page
-    final page = Background(child: Scroll(children: [mainCards]));
+    final page = Background(
+      padding: EdgeInsets.all(15),
+      child: Scroll(children: [mainCards]),
+    );
 
     return Scaffold(body: page);
   }

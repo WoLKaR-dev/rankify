@@ -73,6 +73,8 @@ Future<List<(String, String, String, double)>> predictGame(
   final List<(String, String, String, double)> predictions = [];
 
   for (final brawler in BrawlService.instance.brawlers) {
+    if (pickedBrawlers.contains(brawler)) continue; 
+
     // adds candidate brawler in position
     allies[pickPosition] = brawler;
 
@@ -82,7 +84,7 @@ Future<List<(String, String, String, double)>> predictGame(
     // predecir
     final probability = AiService.instance.predict(vector);
 
-    // adding result 
+    // adding result
     predictions.add((brawler.$1, brawler.$2, brawler.$3, probability));
   }
 
