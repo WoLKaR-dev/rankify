@@ -23,10 +23,10 @@ Choose a name, write a description, and whitelist the IP address from which the 
 Once you have your API key, create a file named `.env` in the `python/` directory and paste the following code: 
 
 ```env
-API_KEY=[API_KEY]
+BS_API_KEY=[API_KEY]
 ```
 Where: 
-- `[API_KEY]` is the key you obtained (without `[]`). 
+- `[BS_API_KEY]` is the key you obtained (without `[]`). 
 
 ### Creating Data files
 The model uses `.csv` files for training. Create a `data.csv` file in the `python/` directory using `data_template.csv` as a template. Copy the contents of the template into your new `data.csv` file. 
@@ -38,6 +38,9 @@ These are the headers used to store data:
 - `timestamp`: Used to avoid duplicate matches. 
 
 ### Preparing Python
+Here are a few methods to gather data from battles to train AI. 
+
+#### Method 1
 Run the following command to navigate to the `python/` directory: 
 ```bash
 cd python
@@ -45,7 +48,11 @@ cd python
 
 To keep the environment isolated, create a virtual environment by running: 
 ```bash
+# Windows
 python -m venv .venv
+
+# Linux / Mac
+python3 -m venv .venv
 ```
 
 Then, activate it: 
@@ -59,12 +66,14 @@ source .venv/bin/activate
 
 You will know it is active if `(.venv)` appears in your terminal prompt. 
 
-#### Installing dependencies
+##### Installing dependencies
 In this new terminal, run: 
 ```bash
-pip install python-dotenv
+pip install requests
+pip install aiohttp
+pip install dotenv
 ```
-### Ready to fetch data!
+##### Ready to fetch data!
 Now, you can run `data_gather.py` to collect data. 
 ```bash
 # In windows
@@ -75,6 +84,9 @@ python3 data_gather.py
 ```
 
 Data will be saved to `data.csv`. Once finished, ensure that the first line of `data.csv` only contains the headers as shown in `data_template.csv`. 
+
+#### Method 2
+Alternatively, you can download our open source `data.csv` file that can be found in [Releases](https://github.com/WoLKaR-dev/rankify/releases) section, under `Last Data` name. This file is updated hourly. 
 
 ## Training AI Model
 Now, you will hava your `data.csv` file with all the required information. You can now open [Google Collab](https://colab.research.google.com/drive/17v4WvOgDleoOywlKYAOZHBwc0xaIOfQo?usp=sharing) to train this model. 
