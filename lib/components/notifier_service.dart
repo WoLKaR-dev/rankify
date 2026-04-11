@@ -7,3 +7,11 @@ class SettingsNotifier extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+/// Notify ingredient changes
+class PickNotifier extends ChangeNotifier {
+  /// Notifies
+  void notify() {
+    notifyListeners();
+  }
+}

@@ -19,6 +19,7 @@ dependencies:
       url: "https://github.com/wolkar-dev/wolkarutils.git"
   audioplayers: ^6.6.0
   speech_to_text: ^7.3.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

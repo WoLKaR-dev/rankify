@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:rankify/core/theme.dart';
 import 'package:rankify/modules/home/home_page.dart';
 import 'package:rankify/modules/pick/pick_page.dart';
 import 'package:rankify/modules/settings/settings_page.dart';
@@ -18,26 +17,24 @@ class _NavigationPageState extends State<NavigationPage> {
   // App bar titles
   List<String> appBarTitles = ["Home", "Ranked", "Settings"];
 
-  // App screens
-  List<Widget> pages = [HomePage(), PickPage(), SettingsPage()];
-
   @override
   Widget build(BuildContext context) {
-    //ATOMS Preview chip
-    final previewChip = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 5),
-        decoration: BoxDecoration(
-          border: Border.all(color: colorPallete.outline, width: 2),
-          borderRadius: BorderRadius.circular(360),
-        ),
-        child: Text("Preview").p(color: colorPallete.outline),
+    // pages
+    List<Widget> pages = [
+      HomePage(
+        changeIndex: (newIndex) {
+          setState(() {
+            selectedIndex = newIndex;
+          });
+        },
       ),
-    );
+      PickPage(),
+      SettingsPage(),
+    ];
+
 
     //ATOMS Appbar
-    final AppBar appbar = AppBar(title: Text(appBarTitles[selectedIndex]), actions: [previewChip]);
+    final AppBar appbar = AppBar(title: Text(appBarTitles[selectedIndex]),  );
 
     //ATOMS Nav Rail
     final Widget navRail =
@@ -93,10 +90,6 @@ class _NavigationPageState extends State<NavigationPage> {
     );
 
     //WRAPPER Main Structure
-    return Scaffold(
-      appBar: appbar,
-      bottomNavigationBar: navBar,
-      body: page,
-    );
+    return Scaffold(appBar: appbar, bottomNavigationBar: navBar, body: page);
   }
 }
