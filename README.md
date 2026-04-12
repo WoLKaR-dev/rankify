@@ -29,13 +29,13 @@ Where:
 - `[BS_API_KEY]` is the key you obtained (without `[]`). 
 
 ### Creating Data files
-The model uses `.csv` files for training. This python script gathers data from the [Brawl Stars API](https://developer.brawlstars.com/#/) and stores it in a `matches.db` file, that is a SQLite database. When script finishes, will automatically export data in a file called `data.csv`, which is the data file that you will need to import to train AI.  
+The model uses `.csv` files for training. This python script gathers data from the [Brawl Stars API](https://developer.brawlstars.com/#/) and stores it in a `matches.db` file, that is a SQLite database. When script finishes, will automatically export data in a file called `matches.csv`, which is the data file that you will need to import to train AI.  
 
 These are the headers used to store data: 
 - `map`: Event `id`. 
 - `result`: The result of the match, where `1` represents a `victory` and `0` a `defeat`. 
 - `ally1, ..., enemy3`: The `id` of each brawler. 
-- `timestamp`: Used to avoid duplicate matches. 
+- `id`: Used to avoid duplicate matches. 
 
 ### Preparing Python
 Here are a few methods to gather data from battles to train AI. 
@@ -84,13 +84,13 @@ python data_gather.py
 python3 data_gather.py
 ```
 
-Data will be saved to `data.csv`. Once finished, ensure that the first line of `data.csv` only contains the headers as shown in `data_template.csv`. 
+Data will be saved to `matches.csv`. 
 
 #### Method 2
-Alternatively, you can download our open source `data.csv` file that can be found in [Releases](https://github.com/WoLKaR-dev/rankify/releases) section, under `Last Data` name. This file is updated hourly. 
+Alternatively, you can download our open source `matches.csv` file that can be found in [Releases](https://github.com/WoLKaR-dev/rankify/releases) section, under `Last Data` name. This file is updated hourly. 
 
 ## Training AI Model
-Now, you will hava your `data.csv` file with all the required information. You can now open [Google Collab](https://colab.research.google.com/drive/17v4WvOgDleoOywlKYAOZHBwc0xaIOfQo?usp=sharing) to train this model. 
+Now, you will hava your `matches.csv` file with all the required information. You can now open [Google Collab](https://colab.research.google.com/drive/17v4WvOgDleoOywlKYAOZHBwc0xaIOfQo?usp=sharing) to train this model. 
 
 Follow the instructions in that Colab Notebook. After finishing, you will get a total of 3 new files: `brawler_mapping.json`, `map_mapping.json` and `draft_model.tflite`. This last file is the trained AI model that you will use. 
 

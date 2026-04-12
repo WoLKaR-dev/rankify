@@ -1,7 +1,7 @@
 name: Data gather
 on: 
   schedule:
-    - cron: 15,45 * * * *
+    - cron: 0 */3 * * *
   workflow_dispatch:
 
 jobs: 
@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with: 
           name: training-data
-          path: data.csv
+          path: matches.csv
       
       - name: Release data 
         uses: softprops/action-gh-release@v2
@@ -51,7 +51,7 @@ jobs:
           body: |
             This release is updated hourly. 
             Last sync: ${{ github.event.repository.updated_at }}
-          files: data.csv
+          files: matches.csv
           make_latest: true
           overwrite: true
         env:
