@@ -45,6 +45,9 @@ conn = sqlite3.connect("matches.db")  # gets database
 csv_path = "matches.csv"  # just matches csv
 writer = conn.cursor()  # creates cursor
 
+# order utils  
+globalOrder: int 
+
 # Runtime data
 gatheredData = []  # here we add each battle data
 
@@ -60,9 +63,16 @@ def initDataBase():
     enemy1 INTEGER,
     enemy2 INTEGER,
     enemy3 INTEGER,
-    id TEXT PRIMARY KEY
+    id TEXT PRIMARY KEY,
+    order_index INTEGER
     )
     """)
+
+    writer.execute("SELECT MAX(order_index) FROM matches")
+    globalOrder = writer.fetchone()[0]
+
+    if globalOrder is None: 
+        globalOrder = 0
 
 def getBattleData(battleData, playerId):
     """Gets formatted battle data from a player
@@ -113,8 +123,11 @@ def getBattleData(battleData, playerId):
         dataList = [battleMap, battleResult]
         dataList.extend(brawlers)
         dataList.append(newHash)
+        dataList.append(globalOrder)
 
         data = tuple(dataList)  # now we get tuple
+
+        globalOrder += 1
 
         return data
     except Exception:
@@ -124,8 +137,19 @@ def saveMatches():
     """Adds a new matrix to the CSV"""
     writer.executemany("""
     INSERT OR IGNORE INTO matches
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, gatheredData) # add data
+
+    writer.execute("""
+    DELETE FROM matches
+    WHERE order_index < (
+        SELECT order_index FROM matches
+        ORDER BY order_index DESC
+        LIMIT 1 OFFSET (
+            SELECT MAX(COUNT(*) - 300000, 0) FROM matches
+        )
+    );
+    """) # we use 300k as the limit of stored matches
 
     conn.commit() # add changes
 
