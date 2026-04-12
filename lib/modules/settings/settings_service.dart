@@ -1,4 +1,4 @@
-import 'package:rankify/components/notifier_service.dart';
+import 'package:rankify/core/notifiers.dart';
 import 'package:rankify/modules/settings/settings_enums.dart';
 
 class SettingsService {

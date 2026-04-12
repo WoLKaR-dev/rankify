@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rankify/components/notifier_service.dart';
+import 'package:rankify/components/prediction_service.dart';
+import 'package:rankify/core/notifiers.dart';
 
 class PickService {
   //==============
@@ -40,10 +41,11 @@ class PickService {
     (String, String, String)? newSelectedMap,
     List<(String, String, String)?>? newAllies,
     List<(String, String, String)?>? newEnemies,
-  }) {
+  }) async {
     _selectedMap = newSelectedMap ?? _selectedMap;
     _allies = newAllies ?? _allies;
     _enemies = newEnemies ?? _enemies;
+    PredictionService.instance.predictGame();
     _notifier.notify();
   }
 

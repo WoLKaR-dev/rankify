@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:rankify/components/brawl_service.dart';
-import 'package:rankify/modules/assistant/assistant_service.dart';
 import 'package:rankify/modules/settings/settings_data.dart';
 import 'package:rankify/modules/settings/settings_enums.dart';
 import 'package:rankify/modules/settings/settings_service.dart';
@@ -146,69 +145,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
       ],
-    ];
-
-    //ATOMS Speech section
-
-    // ignore: unused_local_variable
-    final speechSection = [
-      Divider().percentage(50),
-      Text("Speech Mode").h4(),
-      ListenableBuilder(
-        listenable: SettingsService.instance.notifier,
-        builder: (context, child) {
-          return SizedBox(
-            width: switch (WolkarUtils.instance.screenSize) {
-              ScreenSize.small || ScreenSize.regular => double.infinity,
-              ScreenSize.large => MediaQuery.sizeOf(context).width * 0.7,
-              ScreenSize.xlarge => MediaQuery.sizeOf(context).width * 0.4,
-              ScreenSize.xxlarge => MediaQuery.sizeOf(context).width * 0.3,
-            },
-            child: Column(
-              spacing: 5,
-              children: [
-                Text("Current mode: ${SettingsService.instance.mode.value}").h6(),
-                Slider(
-                  // ignore: deprecated_member_use
-                  year2023: false,
-                  divisions: 1,
-                  value: sliderValue,
-                  onChanged: (value) {
-                    SpeechMode newMode = switch (double.parse(value.toStringAsFixed(1))) {
-                      0 => SpeechMode.pro,
-                      1 => SpeechMode.aggro,
-                      _ => SpeechMode.pro,
-                    };
-                    SettingsService.instance.update(newMode: newMode);
-
-                    setState(() {
-                      sliderValue = value;
-                    });
-                  },
-                ),
-                Align(
-                  alignment: AlignmentGeometry.topLeft,
-                  child: Text(speechModesDescription[SettingsService.instance.mode]!).p(),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    ];
-
-    //ATOMS Testing zone
-    // ignore: unused_local_variable
-    final testing = [
-      Divider().percentage(50),
-      Text("Testing zone").h4(),
-      Input(controller: testingController),
-      ElevatedButton.icon(
-        onPressed: () {
-          AssistantService.instance.processText(testingController.text);
-        },
-        label: Text("Test"),
-      ),
     ];
 
     //LAYOUT Main page
