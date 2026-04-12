@@ -7,7 +7,6 @@ import sqlite3
 import hashlib
 import pandas as pd
 
-
 class Metronome:
     """Acts as a metronome to add api call rate limit."""
 
@@ -46,7 +45,7 @@ csv_path = "matches.csv"  # just matches csv
 writer = conn.cursor()  # creates cursor
 
 # order utils  
-globalOrder: int 
+globalOrder = 0
 
 # Runtime data
 gatheredData = []  # here we add each battle data
@@ -84,6 +83,7 @@ def getBattleData(battleData, playerId):
     Returns:
         _type_: _description_
     """
+    global globalOrder
     try:
         battleMap = int(battleData["event"]["id"])  # gets battle map id (...)
         battleResult = (
@@ -131,6 +131,7 @@ def getBattleData(battleData, playerId):
 
         return data
     except Exception:
+        print("error")
         return []
 
 def saveMatches():
@@ -212,7 +213,7 @@ async def getPlayerBattleLog_async(session, tag):
             data = await response.json()
             await asyncio.sleep(0.1)
             return data.get("items", [])  # gets the item list or empty.
-        return []
+            return []
 
 async def process_player(session, player, index):
     tag = player["tag"]  # player tag
