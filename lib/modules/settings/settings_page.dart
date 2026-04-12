@@ -1,6 +1,21 @@
+//    Rankify is an Open Source AI app made to help brawl stars players reach higher ranks.
+//    Copyright (C) 2026 WoLKaR-dev
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Affero General Public License as
+//    published by the Free Software Foundation, either version 3 of the
+//    License, or (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU Affero General Public License for more details.
+//
+//    You should have received a copy of the GNU Affero General Public License
+//    along with this program.  If not, see https://www.gnu.org/licenses/
+
 import 'package:flutter/material.dart';
 import 'package:rankify/components/brawl_service.dart';
-import 'package:rankify/modules/assistant/assistant_service.dart';
 import 'package:rankify/modules/settings/settings_data.dart';
 import 'package:rankify/modules/settings/settings_enums.dart';
 import 'package:rankify/modules/settings/settings_service.dart';
@@ -146,69 +161,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
       ],
-    ];
-
-    //ATOMS Speech section
-
-    // ignore: unused_local_variable
-    final speechSection = [
-      Divider().percentage(50),
-      Text("Speech Mode").h4(),
-      ListenableBuilder(
-        listenable: SettingsService.instance.notifier,
-        builder: (context, child) {
-          return SizedBox(
-            width: switch (WolkarUtils.instance.screenSize) {
-              ScreenSize.small || ScreenSize.regular => double.infinity,
-              ScreenSize.large => MediaQuery.sizeOf(context).width * 0.7,
-              ScreenSize.xlarge => MediaQuery.sizeOf(context).width * 0.4,
-              ScreenSize.xxlarge => MediaQuery.sizeOf(context).width * 0.3,
-            },
-            child: Column(
-              spacing: 5,
-              children: [
-                Text("Current mode: ${SettingsService.instance.mode.value}").h6(),
-                Slider(
-                  // ignore: deprecated_member_use
-                  year2023: false,
-                  divisions: 1,
-                  value: sliderValue,
-                  onChanged: (value) {
-                    SpeechMode newMode = switch (double.parse(value.toStringAsFixed(1))) {
-                      0 => SpeechMode.pro,
-                      1 => SpeechMode.aggro,
-                      _ => SpeechMode.pro,
-                    };
-                    SettingsService.instance.update(newMode: newMode);
-
-                    setState(() {
-                      sliderValue = value;
-                    });
-                  },
-                ),
-                Align(
-                  alignment: AlignmentGeometry.topLeft,
-                  child: Text(speechModesDescription[SettingsService.instance.mode]!).p(),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    ];
-
-    //ATOMS Testing zone
-    // ignore: unused_local_variable
-    final testing = [
-      Divider().percentage(50),
-      Text("Testing zone").h4(),
-      Input(controller: testingController),
-      ElevatedButton.icon(
-        onPressed: () {
-          AssistantService.instance.processText(testingController.text);
-        },
-        label: Text("Test"),
-      ),
     ];
 
     //LAYOUT Main page

@@ -14,28 +14,27 @@
 //    You should have received a copy of the GNU Affero General Public License
 //    along with this program.  If not, see https://www.gnu.org/licenses/
 
-enum SpeechMode {
-  pro("Pro"),
-  aggro("Aggro");
+import 'package:flutter/material.dart';
 
-  final String value;
-  const SpeechMode(this.value);
+class SettingsNotifier extends ChangeNotifier {
+  /// Notifies
+  void notify() {
+    notifyListeners();
+  }
 }
 
-enum Model {
-  v1("V1"),
-  v2("V2"),
-  v3("V3");
-
-  final String value;
-  const Model(this.value);
+/// Notify any change during pick phase
+class PickNotifier extends ChangeNotifier {
+  /// Notifies
+  void notify() {
+    notifyListeners();
+  }
 }
 
-enum Optimization {
-  few("Fast"),
-  regular("Regular"),
-  personalized("Personalized");
-
-  final String value;
-  const Optimization(this.value);
+/// Notify changes in predictions
+class PredictionServiceNotifier extends ChangeNotifier {
+  /// Notifies
+  void notify() {
+    notifyListeners();
+  }
 }

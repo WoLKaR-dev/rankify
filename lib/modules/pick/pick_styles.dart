@@ -1,3 +1,19 @@
+//    Rankify is an Open Source AI app made to help brawl stars players reach higher ranks.
+//    Copyright (C) 2026 WoLKaR-dev
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Affero General Public License as
+//    published by the Free Software Foundation, either version 3 of the
+//    License, or (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU Affero General Public License for more details.
+//
+//    You should have received a copy of the GNU Affero General Public License
+//    along with this program.  If not, see https://www.gnu.org/licenses/
+
 import 'package:flutter/material.dart';
 import 'package:rankify/core/theme.dart';
 import 'package:wolkarutils/wolkarutils.dart';
@@ -19,6 +35,7 @@ class PickableCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(5),
         child: Container(
+          height: 120,
           padding: EdgeInsets.all(5),
           decoration: BoxDecoration(
             color: available ? colorPallete.surfaceContainer : colorPallete.secondaryContainer,
@@ -151,7 +168,6 @@ class PredictedBrawlerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: colorPallete.outline),
@@ -159,16 +175,16 @@ class PredictedBrawlerCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(5),
         child: SizedBox.square(
-          dimension: switch(WolkarUtils.instance.screenSize){
-          ScreenSize.small => 70,
-          ScreenSize.regular => 90,
-          ScreenSize.large => 110,
-          ScreenSize.xlarge => 140,
-          ScreenSize.xxlarge => 160,
+          dimension: switch (WolkarUtils.instance.screenSize) {
+            ScreenSize.small => 70,
+            ScreenSize.regular => 90,
+            ScreenSize.large => 110,
+            ScreenSize.xlarge => 140,
+            ScreenSize.xxlarge => 160,
           },
           child: ClipRRect(
             borderRadius: BorderRadiusGeometry.circular(10),
-            child: Image.network(fit: BoxFit.fill,  predict.$2),
+            child: Image.network(fit: BoxFit.fill, predict.$2),
           ),
         ),
       ),
