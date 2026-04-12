@@ -158,7 +158,7 @@ def saveMatches():
     writer.close() # close connection
 
 def getRankingPlayers():
-    """Síncrona está bien porque solo son 10 llamadas al inicio."""
+    """Gets all players data"""
     players = []  # all players
     countryCodes = [
         "global",
