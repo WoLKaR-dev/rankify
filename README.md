@@ -29,7 +29,7 @@ Where:
 - `[BS_API_KEY]` is the key you obtained (without `[]`). 
 
 ### Creating Data files
-The model uses `.csv` files for training. Create a `data.csv` file in the `python/` directory using `data_template.csv` as a template. Copy the contents of the template into your new `data.csv` file. 
+The model uses `.csv` files for training. This python script gathers data from the [Brawl Stars API](https://developer.brawlstars.com/#/) and stores it in a `matches.db` file, that is a SQLite database. When script finishes, will automatically export data in a file called `data.csv`, which is the data file that you will need to import to train AI.  
 
 These are the headers used to store data: 
 - `map`: Event `id`. 
@@ -72,6 +72,7 @@ In this new terminal, run:
 pip install requests
 pip install aiohttp
 pip install dotenv
+pip install pandas
 ```
 ##### Ready to fetch data!
 Now, you can run `data_gather.py` to collect data. 
