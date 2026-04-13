@@ -143,12 +143,10 @@ def saveMatches():
 
     writer.execute("""
     DELETE FROM matches
-    WHERE order_index < (
-        SELECT order_index FROM matches
-        ORDER BY order_index DESC
-        LIMIT 1 OFFSET (
-            SELECT MAX(COUNT(*) - 300000, 0) FROM matches
-        )
+    WHERE id NOT IN (
+    SELECT id FROM matches
+    ORDER BY order_index DESC
+    LIMIT 300000
     );
     """) # we use 300k as the limit of stored matches
 
