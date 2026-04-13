@@ -44,8 +44,6 @@ conn = sqlite3.connect("matches.db")  # gets database
 csv_path = "matches.csv"  # just matches csv
 writer = conn.cursor()  # creates cursor
 
-# order utils  
-globalOrder = 0
 
 # Runtime data
 gatheredData = []  # here we add each battle data
@@ -67,12 +65,6 @@ def initDataBase():
     )
     """)
 
-    writer.execute("SELECT MAX(order_index) FROM matches")
-    globalOrder = writer.fetchone()[0]
-
-    if globalOrder is None: 
-        globalOrder = 0
-
 def getBattleData(battleData, playerId):
     """Gets formatted battle data from a player
 
@@ -81,9 +73,8 @@ def getBattleData(battleData, playerId):
         playerId : Player ID to organize teams as if local
 
     Returns:
-        _type_: _description_
+        tuple | list: Formatted battle data, or empty list on error.
     """
-    global globalOrder
     try:
         battleMap = int(battleData["event"]["id"])  # gets battle map id (...)
         battleResult = (
@@ -117,49 +108,69 @@ def getBattleData(battleData, playerId):
             for brawler in team["brawlers"]:
                 brawlers.append(brawler)  # append team brawlers in order
 
-        key = f"{battleMap}_{battleResult}_{'_'.join(str(brawlers))}_{battleTime}"  # here we generate unique id
+        key = f"{battleMap}_{battleResult}_{battleTime}"  # here we generate unique id
         newHash = hashlib.md5(key.encode()).hexdigest()  # unique id
 
         dataList = [battleMap, battleResult]
         dataList.extend(brawlers)
         dataList.append(newHash)
-        dataList.append(globalOrder)
+        dataList.append(None)  # order_index placeholder, assigned after INSERT
 
-        data = tuple(dataList)  # now we get tuple
-
-        globalOrder += 1
-
-        return data
+        return tuple(dataList)  # now we get tuple
     except Exception:
         print("error")
         return []
 
 def saveMatches():
-    """Adds a new matrix to the CSV"""
+    """Adds new matches to the DB and exports a CSV."""
     writer.executemany("""
     INSERT OR IGNORE INTO matches
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, gatheredData) # add data
+    """, gatheredData)  # add data; duplicates are silently ignored
 
+    # assign order_index only to rows that have none (i.e. newly inserted rows).
+    writer.execute("""
+    UPDATE matches
+    SET order_index = (
+        SELECT COUNT(*) - 1
+        FROM matches AS m2
+        WHERE m2.rowid <= matches.rowid
+          AND m2.order_index IS NULL
+    ) + COALESCE((SELECT MAX(order_index) FROM matches WHERE order_index IS NOT NULL), -1) + 1
+    WHERE order_index IS NULL
+    """)
+
+    # keep only the 300,000 most recent matches
     writer.execute("""
     DELETE FROM matches
     WHERE id NOT IN (
-    SELECT id FROM matches
-    ORDER BY order_index DESC
-    LIMIT 300000
+        SELECT id FROM matches
+        ORDER BY order_index DESC
+        LIMIT 300000
     );
-    """) # we use 300k as the limit of stored matches
+    """)
 
-    conn.commit() # add changes
+    # Re-normalize order_index so it always starts from 0 and is contiguous.
+    # This prevents the index from growing indefinitely.
+    writer.execute("""
+    UPDATE matches
+    SET order_index = (
+        SELECT COUNT(*) - 1
+        FROM matches AS m2
+        WHERE m2.order_index <= matches.order_index
+    )
+    """)
 
-    if os.path.exists(csv_path): # remove previous csv
+    conn.commit()  # persist changes
+
+    if os.path.exists(csv_path):  # remove previous csv
         os.remove(csv_path)
 
-    df = pd.read_sql_query("SELECT * FROM matches", conn) # get all data
+    df = pd.read_sql_query("SELECT * FROM matches ORDER BY order_index ASC", conn)  # get all data
 
-    df.to_csv(csv_path, index = False) # export csv
+    df.to_csv(csv_path, index=False)  # export csv
 
-    writer.close() # close connection
+    writer.close()  # close connection
 
 def getRankingPlayers():
     """Gets ranking players data"""

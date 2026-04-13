@@ -4,3 +4,4 @@ python/
 build/
 build
 .venv
+load_data.csv
