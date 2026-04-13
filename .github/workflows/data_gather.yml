@@ -1,7 +1,7 @@
 name: Data gather
 on: 
   schedule:
-    - cron: 0 */3 * * *
+    - cron: 0 */3 * * * # each 3h
   workflow_dispatch:
 
 jobs: 
@@ -37,11 +37,14 @@ jobs:
           git commit -m "Data gather ended" || true
           git push 
       
-      - name: Upload Artifact
+      - name: Upload Gathered Data Artifact
         uses: actions/upload-artifact@v4
         with: 
-          name: training-data
-          path: matches.csv
+          name: gathered-data
+          path: |
+            matches.csv
+            affinity.csv
+            counter.csv
       
       - name: Release data 
         uses: softprops/action-gh-release@v2
@@ -51,7 +54,10 @@ jobs:
           body: |
             This release is updated hourly. 
             Last sync: ${{ github.event.repository.updated_at }}
-          files: matches.csv
+          files: |
+            matches.csv
+            affinity.csv
+            counter.csv
           make_latest: true
           overwrite: true
         env:
