@@ -5,3 +5,5 @@ build/
 build
 .venv
 load_data.csv
+.env
+test/
