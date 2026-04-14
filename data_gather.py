@@ -30,8 +30,8 @@ import pandas as pd
 
 # SETTINGS:
 matches_limit = 300000
-counter_limit = 600000
-affinity_limit = 600000
+counter_limit = 200000
+affinity_limit = 100000
 
 
 class Metronome:
