@@ -32,7 +32,7 @@ jobs:
         
         with:
           ref: gather 
-          token: ${{ secrets.GITHUB_TOKEN }} # get last repo data from gather branch
+          token: ${{ secrets.GIT_TOKEN }} # get last repo data from gather branch
       
       #
       # Install python. 
@@ -99,4 +99,4 @@ jobs:
           git add . 
           git commit -m "New data added"
           git push
-      
+

@@ -106,11 +106,24 @@ This section was updated and moved to [gather branch](https://github.com/WoLKaR-
 
 ## Training AI Model
 
-Now, you will have your `matches.csv` file with all the required information. You can now open [Google Collab](https://colab.research.google.com/drive/17v4WvOgDleoOywlKYAOZHBwc0xaIOfQo?usp=sharing) to train this model.
+### Generating AI model
 
-Follow the instructions in that Colab Notebook. After finishing, you will get a total of 3 new files: `brawler_mapping.json`, `map_mapping.json` and `draft_model.tflite`. This last file is the trained AI model that you will use.
+Here, you have two different ways to train your model:
 
-Delete their equivalents in `assets/data/` and paste new `.json` files there. New AI model must be located at `assets/models/`.
+1. Pick our [already trained model](https://github.com/WoLKaR-dev/rankify/releases/tag/latest-model-data). These are files which you will need in the next step.
+2. Alternatively, train the model in [Google Colab](https://colab.research.google.com/drive/17v4WvOgDleoOywlKYAOZHBwc0xaIOfQo?usp=sharing). This second step will be detailed in the next section.
+
+#### Option 1
+
+Download our [already trained model](https://github.com/WoLKaR-dev/rankify/releases/tag/latest-model-data). You will need to download `brawler_mapping.json`, `map_mapping.json`and`draft_model.tflite`. These are key files. Mantain these files till the next step. 
+
+#### Option 2
+
+Using your `matches.csv`, you can open [Google Colab](https://colab.research.google.com/drive/17v4WvOgDleoOywlKYAOZHBwc0xaIOfQo?usp=sharing) to train this model. Follow the instructions carefully in Collab. After finishing, you will get a total of 3 new files: `brawler_mapping.json`, `map_mapping.json` and `draft_model.tflite`. The latter is the trained AI model that you will use.
+
+### Adding files to App
+
+Once you have your `*.json` files and your model, move `brawler_mapping.json`, `map_mapping.json` to `/assets/data/`, and replace the previous files. Also, move the model `draft_model.tflite` to `/assets/models/`, replacing the old one.
 
 ## Ready to go!
 

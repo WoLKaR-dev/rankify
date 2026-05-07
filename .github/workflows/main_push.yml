@@ -16,26 +16,35 @@
 
 name: Main Push
 
-on: 
-  #push:
-  #  branches:
-  #    - stable
+on:
+  push:
+    branches:
+    - stable
   workflow_dispatch:
+
 
 jobs:
   merge_branches:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Merge branches
-        run: |
-          git config --global user.name "Auto Merger"
-          git config --global user.email "action@github.com"
-          git fetch
-          git checkout daily
-          git merge main
-          git push
+    #
+    # Get code
+    #
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GIT_TOKEN }}
+
+    #
+    # Merge branches
+    #
+    - name: Merge branches
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git fetch origin daily
+        git branch -f daily stable
+        git switch daily
+        git push origin daily --force

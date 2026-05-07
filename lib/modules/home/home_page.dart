@@ -15,8 +15,10 @@
 //    along with this program.  If not, see https://www.gnu.org/licenses/
 
 import 'package:flutter/material.dart';
+import 'package:rankify/core/theme.dart';
 import 'package:rankify/modules/home/home_code.dart';
 import 'package:rankify/modules/home/home_style.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wolkarutils/wolkarutils.dart';
 
 class HomePage extends StatefulWidget {
@@ -68,10 +70,42 @@ class _HomePageState extends State<HomePage> {
       ],
     );
 
+    //ATOMS Disclaimers
+    final disclaimer = SizedBox(
+      width: switch (WolkarUtils.instance.screenSize) {
+        ScreenSize.small || ScreenSize.regular => double.infinity,
+        ScreenSize.large => MediaQuery.sizeOf(context).width * 0.7,
+        ScreenSize.xlarge => MediaQuery.sizeOf(context).width * 0.4,
+        ScreenSize.xxlarge => MediaQuery.sizeOf(context).width * 0.3,
+      },
+      child: Column(
+        spacing: 10,
+        children: [
+          SizedBox(height: 20),
+          Text(
+            "This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it. For more information, see",
+          ).h6(),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorPallete.primary,
+              foregroundColor: colorPallete.onPrimary,
+            ),
+            onPressed: () async {
+              final Uri url = Uri.parse("https://www.supercell.com/fan-content-policy");
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url);
+              }
+            },
+            label: Text("Supercell's Fan Content Policy"),
+          ),
+        ],
+      ),
+    );
+
     //LAYOUT Page
     final page = Background(
       padding: EdgeInsets.all(15),
-      child: Scroll(spacing: 15, children: [title, mainCards]),
+      child: Scroll(spacing: 15, children: [title, mainCards, disclaimer]),
     );
 
     return Scaffold(body: page);

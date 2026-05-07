@@ -30,7 +30,7 @@ class SettingsService {
   SpeechMode _mode = SpeechMode.pro;
 
   /// Active model
-  Model _model = Model.v3;
+  Model _model = Model.v2;
 
   /// Class notifier
   final SettingsNotifier _notifier = SettingsNotifier();
