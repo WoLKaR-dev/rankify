@@ -21,6 +21,8 @@ import 'package:rankify/core/theme.dart';
 import 'package:rankify/modules/pick/pick_code.dart';
 import 'package:rankify/modules/pick/pick_service.dart';
 import 'package:rankify/modules/pick/pick_styles.dart';
+import 'package:rankify/modules/settings/settings_enums.dart';
+import 'package:rankify/modules/settings/settings_service.dart';
 import 'package:wolkarutils/wolkarutils.dart';
 
 /// It's the screen where the user will be able to select the map and the brawlers.
@@ -74,6 +76,7 @@ class _PickPageState extends State<PickPage> {
     //ATOMS Filter options
     final filterOptions = [
       Input(
+        initiallySelected: true,
         controller: PickService.instance.controller,
         dialog: true,
         onChange: (_) {
@@ -117,6 +120,7 @@ class _PickPageState extends State<PickPage> {
                       selected: PickService.instance.selectedMap == map,
                       onTap: () {
                         PickService.instance.update(newSelectedMap: map);
+                        
                       },
                     );
                   },
@@ -290,7 +294,7 @@ class _PickPageState extends State<PickPage> {
           child: ExpansionTile(
             shape: BoxBorder.all(color: Colors.transparent),
             title: Text("See all data").h5(),
-            initiallyExpanded: false,
+            initiallyExpanded: true,
             children: [
               Table(
                 border: TableBorder.all(color: colorPallete.outline),
@@ -299,7 +303,11 @@ class _PickPageState extends State<PickPage> {
                     decoration: BoxDecoration(color: colorPallete.secondaryFixed),
                     children: [
                       Center(child: Text("Name").h6()),
-                      Center(child: Text("Probability").h6()),
+                      Center(
+                        child: Text(
+                          SettingsService.instance.model == Model.v1 ? "Value" : "Delta",
+                        ).h6(),
+                      ),
                     ],
                   ),
                   ...List.generate(PredictionService.instance.latestPredictions.length, (index) {

@@ -61,6 +61,7 @@ class PickService {
     _selectedMap = newSelectedMap ?? _selectedMap;
     _allies = newAllies ?? _allies;
     _enemies = newEnemies ?? _enemies;
+    _controller.text = "";
     PredictionService.instance.predictGame();
     _notifier.notify();
   }

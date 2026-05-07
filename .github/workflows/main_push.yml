@@ -17,9 +17,9 @@
 name: Main Push
 
 on: 
-  # push:
-    # branches:
-      # - main
+  #push:
+  #  branches:
+  #    - stable
   workflow_dispatch:
 
 jobs:

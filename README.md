@@ -123,3 +123,13 @@ Now, you have your model trained and ready to go. Check in-app code from `lib/co
 ##### Credits
 
 Credits to [Brawlify](https://brawlify.com), which provides a free and open API with map icons and brawlers. Thanks!.
+
+# 🗺️ Roadmap
+
+This is the current roadmap for Rankify:
+
+```plaintext
+🟢 Fixed-size brawler portraits
+🟠 Ability to filter to LvL11 brawlers only
+🟠 Add ban screen
+```

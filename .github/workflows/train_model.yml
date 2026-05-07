@@ -182,3 +182,5 @@ jobs:
           git add . 
           git commit -m "New model and data added"
           git push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

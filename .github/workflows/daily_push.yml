@@ -16,9 +16,9 @@
 
 name: Daily Push 
 on:
-  # push:
-    # branches:
-    # - daily # Everytime daily is pushed, this workflow is triggered.
+  #push:
+  #  branches:
+  #  - daily # Everytime daily is pushed, this workflow is triggered.
   workflow_dispatch:
 
 
