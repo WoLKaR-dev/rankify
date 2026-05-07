@@ -231,13 +231,26 @@ class PredictionService {
 
     // Gets all brawlers
     List<(String, String, String)> brawlers = switch (SettingsService.instance.v3Optimization) {
-      Optimization.few => (await predictV2Game()).take(10).map((e) => (e.$1, e.$2, e.$3)).toList(),
+      Optimization.few => (await predictV2Game()).take(10).map((e) => (e.$1, e.$2, e.$3)).where(
+              (e) =>
+                  !(PickService.instance.allies.contains((e)) ||
+                      PickService.instance.enemies.contains((e))),
+            ).toList(),
       Optimization.regular =>
-        (await predictV2Game()).take(25).map((e) => (e.$1, e.$2, e.$3)).toList(),
+        (await predictV2Game()).take(25).map((e) => (e.$1, e.$2, e.$3)).where(
+              (e) =>
+                  !(PickService.instance.allies.contains((e)) ||
+                      PickService.instance.enemies.contains((e))),
+            ).toList(),
       Optimization.personalized =>
         (await predictV2Game())
             .take(SettingsService.instance.v3PersonalizedBrawlers)
             .map((e) => (e.$1, e.$2, e.$3))
+            .where(
+              (e) =>
+                  !(PickService.instance.allies.contains((e)) ||
+                      PickService.instance.enemies.contains((e))),
+            )
             .toList(),
     };
 

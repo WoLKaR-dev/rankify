@@ -73,16 +73,12 @@ class _PickPageState extends State<PickPage> {
 
     //ATOMS Filter options
     final filterOptions = [
-      Row(
-        children: [
-          Input(
-            controller: PickService.instance.controller,
-            dialog: true,
-            onChange: (_) {
-              setState(() {});
-            },
-          ),
-        ],
+      Input(
+        controller: PickService.instance.controller,
+        dialog: true,
+        onChange: (_) {
+          setState(() {});
+        },
       ),
     ];
 
@@ -148,28 +144,33 @@ class _PickPageState extends State<PickPage> {
               ...List.generate(PickService.instance.allies.length, (index) {
                 final brawler = PickService.instance.allies[index];
                 return GestureDetector(
-                  child: PickedBrawlerCard(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BrawlerSelectionPage(
-                            filterController: PickService.instance.controller,
-                          ),
-                        ),
-                      ).then((value) async {
-                        List<(String, String, String)?> newAllies = PickService.instance.allies;
-                        newAllies[index] = value;
-                        PickService.instance.update(newAllies: newAllies);
-                      });
-                    },
-                    onLongTap: () async {
-                      List<(String, String, String)?> newAllies = PickService.instance.allies;
-                      newAllies[index] = null;
-                      PickService.instance.update(newAllies: newAllies);
-                    },
-                    brawler: brawler,
-                    isAlly: true,
+                  child: Column(
+                    children: [
+                      Text("Ally ${index + 1}").h6(color: Colors.blueAccent),
+                      PickedBrawlerCard(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BrawlerSelectionPage(
+                                filterController: PickService.instance.controller,
+                              ),
+                            ),
+                          ).then((value) async {
+                            List<(String, String, String)?> newAllies = PickService.instance.allies;
+                            newAllies[index] = value;
+                            PickService.instance.update(newAllies: newAllies);
+                          });
+                        },
+                        onLongTap: () async {
+                          List<(String, String, String)?> newAllies = PickService.instance.allies;
+                          newAllies[index] = null;
+                          PickService.instance.update(newAllies: newAllies);
+                        },
+                        brawler: brawler,
+                        isAlly: true,
+                      ),
+                    ],
                   ),
                 );
               }),
@@ -184,28 +185,34 @@ class _PickPageState extends State<PickPage> {
               ...List.generate(PickService.instance.enemies.length, (index) {
                 final brawler = PickService.instance.enemies[index];
                 return GestureDetector(
-                  child: PickedBrawlerCard(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BrawlerSelectionPage(
-                            filterController: PickService.instance.controller,
-                          ),
-                        ),
-                      ).then((value) async {
-                        List<(String, String, String)?> newEnemies = PickService.instance.enemies;
-                        newEnemies[index] = value;
-                        PickService.instance.update(newEnemies: newEnemies);
-                      });
-                    },
-                    onLongTap: () async {
-                      List<(String, String, String)?> newEnemies = PickService.instance.enemies;
-                      newEnemies[index] = null;
-                      PickService.instance.update(newEnemies: newEnemies);
-                    },
-                    brawler: brawler,
-                    isAlly: false,
+                  child: Column(
+                    children: [
+                      PickedBrawlerCard(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BrawlerSelectionPage(
+                                filterController: PickService.instance.controller,
+                              ),
+                            ),
+                          ).then((value) async {
+                            List<(String, String, String)?> newEnemies =
+                                PickService.instance.enemies;
+                            newEnemies[index] = value;
+                            PickService.instance.update(newEnemies: newEnemies);
+                          });
+                        },
+                        onLongTap: () async {
+                          List<(String, String, String)?> newEnemies = PickService.instance.enemies;
+                          newEnemies[index] = null;
+                          PickService.instance.update(newEnemies: newEnemies);
+                        },
+                        brawler: brawler,
+                        isAlly: false,
+                      ),
+                      Text("Enemy ${(index + -3).abs()}").h6(color: Colors.redAccent),
+                    ],
                   ),
                 );
               }),
@@ -218,25 +225,17 @@ class _PickPageState extends State<PickPage> {
     //ATOMS AI runtime predictions section
     final runtimePredictionsSection = [
       //SECTION Title
-      Text("Runtime Predictions").h3(),
       Wrap(
+        runSpacing: 10,
+        alignment: WrapAlignment.center,
         crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 5,
+        spacing: 10,
         children: [
-          Text("Best 5 brawlers").h4(),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colorPallete.primary,
-              foregroundColor: colorPallete.onPrimary,
-            ),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => PredictionsPage()));
-            },
-            label: Text("See All"),
-            icon: Icon(Icons.table_chart),
-          ),
+          Text("AI Runtime Predictions").h4(),
+          if (PredictionService.instance.isPredicting) CircularProgressIndicator(),
         ],
       ),
+      Text("Best 5 brawlers").h4(),
 
       //SECTION Content
       SizedBox(
@@ -277,9 +276,56 @@ class _PickPageState extends State<PickPage> {
           ],
         ),
       ),
+
+      //SECTION More data
+      SizedBox(
+        width: switch (WolkarUtils.instance.screenSize) {
+          ScreenSize.small || ScreenSize.regular => double.infinity,
+          ScreenSize.large => MediaQuery.sizeOf(context).width * 0.7,
+          ScreenSize.xlarge => MediaQuery.sizeOf(context).width * 0.4,
+          ScreenSize.xxlarge => MediaQuery.sizeOf(context).width * 0.3,
+        },
+        child: Material(
+          color: colorPallete.surface,
+          child: ExpansionTile(
+            shape: BoxBorder.all(color: Colors.transparent),
+            title: Text("See all data").h5(),
+            initiallyExpanded: false,
+            children: [
+              Table(
+                border: TableBorder.all(color: colorPallete.outline),
+                children: [
+                  TableRow(
+                    decoration: BoxDecoration(color: colorPallete.secondaryFixed),
+                    children: [
+                      Center(child: Text("Name").h6()),
+                      Center(child: Text("Probability").h6()),
+                    ],
+                  ),
+                  ...List.generate(PredictionService.instance.latestPredictions.length, (index) {
+                    final brawler = PredictionService.instance.latestPredictions[index];
+                    return TableRow(
+                      decoration: BoxDecoration(
+                        color: index.isEven
+                            ? colorPallete.surfaceContainer
+                            : colorPallete.surfaceContainerHighest,
+                      ),
+                      children: [
+                        Center(child: Text(brawler.$3).p()),
+                        Center(child: Text((brawler.$4 * 100).toStringAsFixed(2)).p()),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     ];
 
     //LAYOUT Map Picker page
+    /// The screen where the user selects the map of the match.
     final mapPickerPage = Background(
       padding: EdgeInsets.all(15),
       child: Scroll(
@@ -388,7 +434,7 @@ class _BrawlerSelectionPageState extends State<BrawlerSelectionPage> {
 
     //ATOMS Brawler for big screens
     final bigScreenBrawlerPicker = Scroll(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 10,
       children: [
         ...filterOptions,
@@ -434,113 +480,5 @@ class _BrawlerSelectionPageState extends State<BrawlerSelectionPage> {
     final brawlerPickerPage = Scaffold(body: page);
 
     return Scaffold(appBar: appBar, body: brawlerPickerPage);
-  }
-}
-
-/// It's the screen where the user will be able to see Ai predictions
-///
-/// [PickService.instance.selectedMap] The map selected by the user.
-/// [PickService.instance.allies] The brawlers of the team.
-/// [enemyBrawlers] The brawlers of the enemy team.
-class PredictionsPage extends StatefulWidget {
-  const PredictionsPage({super.key});
-  @override
-  State<PredictionsPage> createState() => _PredictionsPageState();
-}
-
-class _PredictionsPageState extends State<PredictionsPage> {
-  @override
-  void initState() {
-    super.initState();
-    PredictionService.instance.notifier.addListener(_updateState);
-  }
-
-  @override
-  void dispose() {
-    PredictionService.instance.notifier.removeListener(_updateState);
-    super.dispose();
-  }
-
-  void _updateState() {
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    //ATOMS AppBar
-    final AppBar appBar = AppBar(title: Text("See Predictions"));
-
-    //ATOMS Predicted brawlers (best 5)
-    final predictedBrawlerVisuals = [
-      //SECTION Top 5
-      Text("Top 5 picks").h3(),
-      Wrap(
-        alignment: WrapAlignment.center,
-        runAlignment: WrapAlignment.center,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        runSpacing: 5,
-        spacing: 5,
-        children: [
-          ...List.generate(PredictionService.instance.latestPredictions.isNotEmpty ? 5 : 0, (
-            index,
-          ) {
-            final brawler = PredictionService.instance.latestPredictions[index];
-            return PredictedBrawlerCard(predict: brawler);
-          }),
-        ],
-      ),
-
-      //SECTION Total probability table
-      Text("Table of Pick Scores").h4(),
-      SizedBox(
-        width: switch (WolkarUtils.instance.screenSize) {
-          ScreenSize.small || ScreenSize.regular => double.infinity,
-          ScreenSize.large => MediaQuery.sizeOf(context).width * 0.7,
-          ScreenSize.xlarge => MediaQuery.sizeOf(context).width * 0.4,
-          ScreenSize.xxlarge => MediaQuery.sizeOf(context).width * 0.3,
-        },
-        child: Table(
-          border: TableBorder.all(color: colorPallete.outline),
-          children: [
-            TableRow(
-              decoration: BoxDecoration(color: colorPallete.secondaryFixed),
-              children: [
-                Center(child: Text("Name").h6()),
-                Center(child: Text("Probability").h6()),
-              ],
-            ),
-            ...List.generate(PredictionService.instance.latestPredictions.length, (index) {
-              final brawler = PredictionService.instance.latestPredictions[index];
-              return TableRow(
-                decoration: BoxDecoration(
-                  color: index.isEven
-                      ? colorPallete.surfaceContainer
-                      : colorPallete.surfaceContainerHighest,
-                ),
-                children: [
-                  Center(child: Text(brawler.$3).p()),
-                  Center(child: Text((brawler.$4 * 100).toStringAsFixed(2)).p()),
-                ],
-              );
-            }),
-          ],
-        ),
-      ),
-    ];
-
-    //LAYOUT Loading page
-    final loadingPage = Background(child: Center(child: CircularProgressIndicator()));
-
-    //LAYOUT Results page
-    final predictsPage = Background(
-      padding: EdgeInsets.all(15),
-      child: Scroll(spacing: 15, children: [...predictedBrawlerVisuals]),
-    );
-
-    //LAYOUT Main page
-    final page = PredictionService.instance.latestPredictions.isEmpty ? loadingPage : predictsPage;
-
-    //WRAPPER
-    return Scaffold(body: page, appBar: appBar);
   }
 }

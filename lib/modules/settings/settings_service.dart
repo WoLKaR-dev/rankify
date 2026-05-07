@@ -14,6 +14,7 @@
 //    You should have received a copy of the GNU Affero General Public License
 //    along with this program.  If not, see https://www.gnu.org/licenses/
 
+import 'package:rankify/components/brawl_service.dart';
 import 'package:rankify/core/notifiers.dart';
 import 'package:rankify/modules/settings/settings_enums.dart';
 
@@ -29,7 +30,7 @@ class SettingsService {
   SpeechMode _mode = SpeechMode.pro;
 
   /// Active model
-  Model _model = Model.v2;
+  Model _model = Model.v3;
 
   /// Class notifier
   final SettingsNotifier _notifier = SettingsNotifier();
@@ -39,10 +40,10 @@ class SettingsService {
   //==============
 
   /// V3 Optimization Setting
-  Optimization _v3Optimization = Optimization.regular;
+  Optimization _v3Optimization = Optimization.personalized;
 
   /// V3 Personalized Brawlers
-  int _v3PersonalizedBrawlers = 5; 
+  int _v3PersonalizedBrawlers = BrawlService.instance.brawlers.length;
 
   //==============
   //============== Constructors

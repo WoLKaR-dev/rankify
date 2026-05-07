@@ -1,0 +1,47 @@
+#    Rankify is an Open Source AI app made to help brawl stars players reach higher ranks.
+#    Copyright (C) 2026 WoLKaR-dev
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see https://www.gnu.org/licenses/
+
+name: Daily Push 
+on:
+  # push:
+    # branches:
+    # - daily # Everytime daily is pushed, this workflow is triggered.
+  workflow_dispatch:
+
+
+jobs:
+  merge_branches:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }} # just getting the branch code
+
+    - name: Install Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: stable # installing flutter
+        
+    - name: Build web app 
+      run: flutter build web --release --base-href /rankify/ # building web app 
+
+    - name: Push to web branch
+      uses: JamesIves/github-pages-deploy-action@v4 
+      with: 
+        folder: build/web # uploading directory files
+        branch: web # branch
+        token: ${{ secrets.GITHUB_TOKEN }} # security token
