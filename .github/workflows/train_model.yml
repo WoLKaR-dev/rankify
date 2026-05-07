@@ -81,19 +81,19 @@ jobs:
       #
       - name: Pulling and running notebook # pull and run notebook to update data on kaggle
         run: |
-          kaggle kernels pull wolkar/rankifyv2 -p ./.run_dir --metadata
+          kaggle kernels pull wolkar/rankify -p ./.run_dir --metadata
           cd ./.run_dir
           kaggle kernels push 
           cd ..
           echo "Waiting for notebook to finish running..."
           while true; do
-            STATUS=$(kaggle kernels status wolkar/rankifyv2 | awk '{print $NF}')
+            STATUS=$(kaggle kernels status wolkar/rankify | awk '{print $NF}')
             if [ "$STATUS" == "complete" ]; then break; fi
             if [ "$STATUS" == "error" ]; then echo "Error en Kaggle"; exit 1; fi
             sleep 20
           done
 
-          kaggle kernels output wolkar/rankifyv2 -p ./results/
+          kaggle kernels output wolkar/rankify -p ./results/
         env:
           KAGGLE_USERNAME: "wolkar"
           KAGGLE_KEY: ${{ secrets.KAGGLE_ACCESS_TOKEN }}
@@ -123,11 +123,8 @@ jobs:
       - name: Upload Gathered Data Artifact # upload gathered data
         uses: actions/upload-artifact@v4
         with: 
-          name: gathered-data
+          name: trained-model-&-data
           path: |
-            matches.csv
-            affinity.csv
-            counter.csv
             brawler_mapping.json
             map_mapping.json
             draft_model.tflite
@@ -138,15 +135,12 @@ jobs:
       - name: Release data # release gathered data
         uses: softprops/action-gh-release@v2
         with: 
-          tag_name: latest-data
-          name: "Latest Data"
+          tag_name: latest-model-data
+          name: "Latest Model and Data"
           body: |
             This release is updated hourly. 
             Last sync: ${{ github.event.repository.updated_at }}
           files: |
-            matches.csv
-            affinity.csv
-            counter.csv
             brawler_mapping.json
             map_mapping.json
             draft_model.tflite
