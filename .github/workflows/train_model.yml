@@ -86,11 +86,24 @@ jobs:
           kaggle kernels push 
           cd ..
           echo "Waiting for notebook to finish running..."
+
           while true; do
-            STATUS=$(kaggle kernels status wolkar/rankify | awk '{print $NF}')
-            if [ "$STATUS" == "complete" ]; then break; fi
-            if [ "$STATUS" == "error" ]; then echo "Error en Kaggle"; exit 1; fi
-            sleep 20
+
+            RAW_STATUS=$(kaggle kernels status wolkar/rankify)
+            echo "Raw response: $RAW_STATUS"
+
+            if echo "$RAW_STATUS" | grep -iq "complete"; then
+              echo "¡Notebook finalizado con éxito!"
+              break
+            fi
+
+            if echo "$RAW_STATUS" | grep -iq "error"; then
+              echo "Error: El notebook ha fallado en Kaggle."
+              exit 1
+            fi
+
+            echo "Aún procesando..."
+            sleep 30
           done
 
           kaggle kernels output wolkar/rankify -p ./results/
