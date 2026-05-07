@@ -85,20 +85,20 @@ jobs:
           cd ./.run_dir
           kaggle kernels push 
           cd ..
+          
           echo "Waiting for notebook to finish running..."
-
           while true; do
-
+           
             RAW_STATUS=$(kaggle kernels status wolkar/rankify)
             echo "Raw response: $RAW_STATUS"
 
-            if echo "$RAW_STATUS" | grep -iq "complete"; then
+            if echo "$RAW_STATUS" | grep -iq "COMPLETE"; then
               echo "¡Notebook finalizado con éxito!"
               break
             fi
 
-            if echo "$RAW_STATUS" | grep -iq "error"; then
-              echo "Error: El notebook ha fallado en Kaggle."
+            if echo "$RAW_STATUS" | grep -iqE "ERROR|CANCELLED"; then
+              echo "Error: El notebook ha fallado o fue cancelado en Kaggle."
               exit 1
             fi
 
@@ -106,6 +106,7 @@ jobs:
             sleep 30
           done
 
+          echo "Descargando resultados..."
           kaggle kernels output wolkar/rankify -p ./results/
         env:
           KAGGLE_USERNAME: "wolkar"
@@ -161,3 +162,23 @@ jobs:
           overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      #
+      # Do checkout on daily
+      #
+      - name: Daily Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: daily 
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      #
+      # Obtain data from the release 
+      #
+      - name: Obtain data from release # obtain new data from release
+        run: |
+          gh release download latest-model-data --pattern "*.json" --dir ./assets/data --clobber
+          gh release download latest-model-data --pattern "*.tflite" --dir ./assets/models --clobber
+          git add . 
+          git commit -m "New model and data added"
+          git push
