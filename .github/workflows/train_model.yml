@@ -82,7 +82,9 @@ jobs:
       - name: Pulling and running notebook # pull and run notebook to update data on kaggle
         run: |
           kaggle kernels pull wolkar/rankifyv2 -p ./.run_dir --metadata
-          kaggle kernels push -p ./.run_dir 
+          cd ./.run_dir
+          kaggle kernels push 
+          cd ..
           echo "Waiting for notebook to finish running..."
           while true; do
             STATUS=$(kaggle kernels status wolkar/rankifyv2 | awk '{print $NF}')
