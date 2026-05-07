@@ -58,68 +58,6 @@ jobs:
           BS_API_KEY: ${{ secrets.BS_API_KEY }} # in your repo, add BS_API_KEY secret with your brawl stars api key value
 
       #
-      # Install Kaggle CLI
-      # 
-      - name: Installing Kaggle CLI
-        run: pip install kaggle
-
-      #
-      # Create new folder and connect to kaggle. 
-      #          
-      - name: Connecting to Kaggle
-        run: |
-          mkdir -p ~/.kaggle 
-          echo "${{ secrets.KAGGLE_ACCESS_TOKEN }}" > ~/.kaggle/access_token 
-          chmod 600 ~/.kaggle/access_token
-          
-          mkdir -p kaggle_data
-          cp matches.csv kaggle_data/
-
-          echo '{"id" : "wolkar/matches"}' > kaggle_data/dataset-metadata.json
-      #
-      # Send data to Kaggle
-      #
-      - name: Sending data to Kaggle 
-        run: |
-          kaggle datasets version -p kaggle_data -m "Update matches data"
-
-      #
-      # Pulling and running notebook
-      #
-      - name: Pulling and running notebook # pull and run notebook to update data on kaggle
-        run: |
-          kaggle kernels pull wolkar/rankifyv2 -p ./.run_dir --metadata
-          kaggle kernels push -p ./.run_dir 
-          echo "Waiting for notebook to finish running..."
-          while true; do
-            STATUS=$(kaggle kernels status wolkar/rankifyv2 | awk '{print $NF}')
-            if [ "$STATUS" == "complete" ]; then break; fi
-            if [ "$STATUS" == "error" ]; then echo "Error en Kaggle"; exit 1; fi
-            sleep 20
-          done
-
-          kaggle kernels output wolkar/rankifyv2 -p ./results/
-
-      #
-      # Add JSONs and models to branch. 
-      #
-      - name: Add data to branch # add new data to branch
-        run: |
-          cp ./results/draft_model.tflite ./
-          cp ./results/brawler_mapping.json ./
-          cp ./results/map_mapping.json ./
-
-          rm -rf ./.run_dir
-          rm -rf ./kaggle_data
-          rm -rf ./results
-
-          git config --global user.name "Auto Gather"
-          git config --global user.email "action@github.com"
-          git add . 
-          git commit -m "New data added and model trained"
-          git push
-      
-      #
       # Add data to release.
       #
       - name: Upload Gathered Data Artifact # upload gathered data
@@ -130,9 +68,6 @@ jobs:
             matches.csv
             affinity.csv
             counter.csv
-            brawler_mapping.json
-            map_mapping.json
-            draft_model.tflite
 
       #
       # Release public data
@@ -149,10 +84,19 @@ jobs:
             matches.csv
             affinity.csv
             counter.csv
-            brawler_mapping.json
-            map_mapping.json
-            draft_model.tflite
           make_latest: true
           overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      #
+      # Add JSONs and models to branch. 
+      #
+      - name: Add data to branch # add new data to branch
+        run: |
+          git config --global user.name "Auto Gather"
+          git config --global user.email "action@github.com"
+          git add . 
+          git commit -m "New data added"
+          git push
+      

@@ -1,0 +1,154 @@
+#    Rankify is an Open Source AI app made to help brawl stars players reach higher ranks.
+#    Copyright (C) 2026 WoLKaR-dev
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see https://www.gnu.org/licenses/
+
+name: Train Model
+
+on: 
+  workflow_dispatch:
+  workflow_run: 
+    workflows: ["Data gather"]
+    types:
+      - completed
+
+jobs: 
+  train: 
+    runs-on: ubuntu-latest
+    steps:
+
+      #
+      # Checkout code
+      #
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: gather 
+          token: ${{ secrets.GITHUB_TOKEN }} 
+
+
+      #
+      # Install python
+      #
+      - name: Install python
+        uses: actions/setup-python@v5
+        with: 
+          python-version : '3.10' 
+        
+      #
+      # Install Kaggle CLI
+      # 
+      - name: Installing Kaggle CLI
+        run: pip install kaggle
+
+
+      #
+      # Create new folder and connect to kaggle. 
+      #          
+      - name: Connecting to Kaggle
+        run: |
+          mkdir -p ~/.kaggle 
+          echo "${{ secrets.KAGGLE_ACCESS_TOKEN }}" > ~/.kaggle/access_token 
+          chmod 600 ~/.kaggle/access_token
+          
+          mkdir -p kaggle_data
+          cp matches.csv kaggle_data/
+
+          echo '{"id" : "wolkar/matches"}' > kaggle_data/dataset-metadata.json
+      #
+      # Send data to Kaggle
+      #
+      - name: Sending data to Kaggle 
+        run: |
+          kaggle datasets version -p kaggle_data -m "Update matches data"
+        env:
+          KAGGLE_USERNAME: "wolkar"
+          KAGGLE_KEY: ${{ secrets.KAGGLE_ACCESS_TOKEN }}
+
+      #
+      # Pulling and running notebook
+      #
+      - name: Pulling and running notebook # pull and run notebook to update data on kaggle
+        run: |
+          kaggle kernels pull wolkar/rankifyv2 -p ./.run_dir --metadata
+          kaggle kernels push -p ./.run_dir 
+          echo "Waiting for notebook to finish running..."
+          while true; do
+            STATUS=$(kaggle kernels status wolkar/rankifyv2 | awk '{print $NF}')
+            if [ "$STATUS" == "complete" ]; then break; fi
+            if [ "$STATUS" == "error" ]; then echo "Error en Kaggle"; exit 1; fi
+            sleep 20
+          done
+
+          kaggle kernels output wolkar/rankifyv2 -p ./results/
+        env:
+          KAGGLE_USERNAME: "wolkar"
+          KAGGLE_KEY: ${{ secrets.KAGGLE_ACCESS_TOKEN }}
+
+      #
+      # Add JSONs and models to branch. 
+      #
+      - name: Add data to branch # add new data to branch
+        run: |
+          cp ./results/draft_model.tflite ./
+          cp ./results/brawler_mapping.json ./
+          cp ./results/map_mapping.json ./
+
+          rm -rf ./.run_dir
+          rm -rf ./kaggle_data
+          rm -rf ./results
+
+          git config --global user.name "Auto Gather"
+          git config --global user.email "action@github.com"
+          git add . 
+          git commit -m "New data added and model trained"
+          git push
+      
+      #
+      # Add data to release.
+      #
+      - name: Upload Gathered Data Artifact # upload gathered data
+        uses: actions/upload-artifact@v4
+        with: 
+          name: gathered-data
+          path: |
+            matches.csv
+            affinity.csv
+            counter.csv
+            brawler_mapping.json
+            map_mapping.json
+            draft_model.tflite
+
+      #
+      # Release public data
+      #
+      - name: Release data # release gathered data
+        uses: softprops/action-gh-release@v2
+        with: 
+          tag_name: latest-data
+          name: "Latest Data"
+          body: |
+            This release is updated hourly. 
+            Last sync: ${{ github.event.repository.updated_at }}
+          files: |
+            matches.csv
+            affinity.csv
+            counter.csv
+            brawler_mapping.json
+            map_mapping.json
+            draft_model.tflite
+          make_latest: true
+          overwrite: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
