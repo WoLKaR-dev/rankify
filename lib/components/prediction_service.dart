@@ -137,7 +137,8 @@ class PredictionService {
       // skip if brawler is already picked
       if (PickService.instance.selectedMap == null ||
           allies.contains(brawler) ||
-          PickService.instance.pickPosition == null) {
+          PickService.instance.pickPosition == null ||
+          PickService.instance.enemies.contains(brawler)) {
         continue;
       }
 
@@ -192,7 +193,7 @@ class PredictionService {
       final allies = List.of(PickService.instance.allies);
 
       // skips if player is picked
-      if (allies.contains(brawler)) continue;
+      if (allies.contains(brawler) || PickService.instance.enemies.contains(brawler)) continue;
 
       allies[PickService.instance.pickPosition!] = brawler;
 
@@ -231,17 +232,26 @@ class PredictionService {
 
     // Gets all brawlers
     List<(String, String, String)> brawlers = switch (SettingsService.instance.v3Optimization) {
-      Optimization.few => (await predictV2Game()).take(10).map((e) => (e.$1, e.$2, e.$3)).where(
+      Optimization.few =>
+        (await predictV2Game())
+            .take(10)
+            .map((e) => (e.$1, e.$2, e.$3))
+            .where(
               (e) =>
                   !(PickService.instance.allies.contains((e)) ||
                       PickService.instance.enemies.contains((e))),
-            ).toList(),
+            )
+            .toList(),
       Optimization.regular =>
-        (await predictV2Game()).take(25).map((e) => (e.$1, e.$2, e.$3)).where(
+        (await predictV2Game())
+            .take(25)
+            .map((e) => (e.$1, e.$2, e.$3))
+            .where(
               (e) =>
                   !(PickService.instance.allies.contains((e)) ||
                       PickService.instance.enemies.contains((e))),
-            ).toList(),
+            )
+            .toList(),
       Optimization.personalized =>
         (await predictV2Game())
             .take(SettingsService.instance.v3PersonalizedBrawlers)
