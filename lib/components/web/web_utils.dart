@@ -14,31 +14,4 @@
 //    You should have received a copy of the GNU Affero General Public License
 //    along with this program.  If not, see https://www.gnu.org/licenses/
 
-enum Model {
-  v1("V1"),
-  v2("V2"),
-  v3("V3"),
-  v4("V4");
-
-  const Model(this.value);
-  final String value;
-}
-
-enum Optimization {
-  few("Few"),
-  regular("Regular"),
-  personalized("Personalized");
-
-  const Optimization(this.value);
-  final String value;
-}
-
-
-enum SpeechMode {
-  pro("Pro"),
-  aggro("Aggro");
-
-  const SpeechMode(this.value);
-  final String value;
-
-}
+export "web_utils_stub.dart" if (dart.library.js_interop) "web_utils_web.dart";

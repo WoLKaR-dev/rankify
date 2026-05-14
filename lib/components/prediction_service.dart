@@ -118,6 +118,7 @@ class PredictionService {
       Model.v1 => await predictV1Game(),
       Model.v2 => await predictV2Game(),
       Model.v3 => (await predictV3Game()).map((e) => (e.$1, e.$2, e.$3, e.$6)).toList(),
+      Model.v4 => (await predictV4Game()).map((e) => (e.$1, e.$2, e.$3, e.$6)).toList(),
     };
     if (_processId != generatedID) return;
     update(newLatestPrediction: predictions, newIsPredicting: false);
@@ -138,8 +139,24 @@ class PredictionService {
       if (PickService.instance.selectedMap == null ||
           allies.contains(brawler) ||
           PickService.instance.pickPosition == null ||
-          PickService.instance.enemies.contains(brawler)) {
+          PickService.instance.enemies.contains(brawler) ||
+          PickService.instance.bans.contains(brawler)) {
         continue;
+      }
+
+      // user related skippings
+      if (BrawlService.instance.validId) {
+        // skip if brawler is not maxed
+        if (!(BrawlService.instance.getBrawlerPowerLevel(brawler.$1) == 11) &&
+            SettingsService.instance.onlyMaxLevel) {
+          continue;
+        }
+
+        // skip if brawler is not unlocked
+        if (!BrawlService.instance.isBrawlerUnlocked(brawler.$1) &&
+            SettingsService.instance.onlyUnlocked) {
+          continue;
+        }
       }
 
       // adds candidate brawler in position
@@ -192,8 +209,27 @@ class PredictionService {
       // get a copy of values
       final allies = List.of(PickService.instance.allies);
 
-      // skips if player is picked
-      if (allies.contains(brawler) || PickService.instance.enemies.contains(brawler)) continue;
+      // skips if player is picked or banned
+      if (allies.contains(brawler) ||
+          PickService.instance.enemies.contains(brawler) ||
+          PickService.instance.bans.contains(brawler)) {
+        continue;
+      }
+
+      // user related skippings
+      if (BrawlService.instance.validId) {
+        // skip if brawler is not maxed
+        if (!(BrawlService.instance.getBrawlerPowerLevel(brawler.$1) == 11) &&
+            SettingsService.instance.onlyMaxLevel) {
+          continue;
+        }
+
+        // skip if brawler is not unlocked
+        if (!BrawlService.instance.isBrawlerUnlocked(brawler.$1) &&
+            SettingsService.instance.onlyUnlocked) {
+          continue;
+        }
+      }
 
       allies[PickService.instance.pickPosition!] = brawler;
 
@@ -223,6 +259,7 @@ class PredictionService {
   /// Returns the list of brawlers with delta values. Sorted for local team
   Future<List<(String, String, String, double, double, double)>> predictV3Game() async {
     // results
+    // whre: id, image, name, localDelta, enemyDelta, score
     List<(String, String, String, double, double, double)> results = [];
 
     // make previous checks
@@ -231,7 +268,7 @@ class PredictionService {
     }
 
     // Gets all brawlers
-    List<(String, String, String)> brawlers = switch (SettingsService.instance.v3Optimization) {
+    List<(String, String, String)> brawlers = switch (SettingsService.instance.optimization) {
       Optimization.few =>
         (await predictV2Game())
             .take(10)
@@ -290,10 +327,26 @@ class PredictionService {
     for (final brawler in brawlers) {
       await Future.delayed(Duration.zero);
 
-      // Skip if brawler is already picked
+      // Skip if brawler is already picked or banned
       if (PickService.instance.allies.contains(brawler) ||
-          PickService.instance.enemies.contains(brawler)) {
+          PickService.instance.enemies.contains(brawler) ||
+          PickService.instance.bans.contains(brawler)) {
         continue;
+      }
+
+      // user related skippings
+      if (BrawlService.instance.validId) {
+        // skip if brawler is not maxed
+        if (!(BrawlService.instance.getBrawlerPowerLevel(brawler.$1) == 11) &&
+            SettingsService.instance.onlyMaxLevel) {
+          continue;
+        }
+
+        // skip if brawler is not unlocked
+        if (!BrawlService.instance.isBrawlerUnlocked(brawler.$1) &&
+            SettingsService.instance.onlyUnlocked) {
+          continue;
+        }
       }
 
       // gets allies
@@ -349,6 +402,59 @@ class PredictionService {
     results.sort((a, b) => b.$6.compareTo(a.$6));
 
     // get results
+    return results;
+  }
+
+  /// Predicts best brawler depending on v4 calcs.
+  ///
+  /// Returns the list of brawlers with delta values. Sorted for local team
+  Future<List<(String, String, String, double, double, double)>> predictV4Game() async {
+    // gets the v3 prediction to apply filters
+    final results = await predictV3Game();
+
+    // iterate every brawler
+    for (final (String, String, String, double, double, double) brawler in results) {
+      // get brawler delta
+      final baseScore = brawler.$6;
+
+      // if map is null return empty list
+      if (PickService.instance.selectedMap == null) return [];
+
+      // get map data
+      final map = AiService.instance.cachedAffinityChances?[PickService.instance.selectedMap!.$1];
+
+      // define winrate
+      var winrate = 0.5;
+
+      // if id is not null
+      if (map != null) {
+        // obtain winrate
+        winrate = map[brawler.$1] ?? 0.5;
+      } else {
+        winrate = 0.5;
+      }
+
+      // calculate new score
+      final newScore = baseScore * (1 + (winrate - 0.5));
+
+      // update score
+      (String, String, String, double, double, double) newBrawler = (
+        brawler.$1,
+        brawler.$2,
+        brawler.$3,
+        brawler.$4,
+        brawler.$5,
+        newScore,
+      );
+
+      // update results
+      results[results.indexOf(brawler)] = newBrawler;
+
+      // sort the results
+      results.sort((a, b) => b.$6.compareTo(a.$6));
+    }
+
+    // return results
     return results;
   }
 

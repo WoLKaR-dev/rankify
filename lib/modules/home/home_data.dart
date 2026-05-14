@@ -14,31 +14,15 @@
 //    You should have received a copy of the GNU Affero General Public License
 //    along with this program.  If not, see https://www.gnu.org/licenses/
 
-enum Model {
-  v1("V1"),
-  v2("V2"),
-  v3("V3"),
-  v4("V4");
+import 'package:rankify/components/brawl_service.dart';
 
-  const Model(this.value);
-  final String value;
-}
-
-enum Optimization {
-  few("Few"),
-  regular("Regular"),
-  personalized("Personalized");
-
-  const Optimization(this.value);
-  final String value;
-}
-
-
-enum SpeechMode {
-  pro("Pro"),
-  aggro("Aggro");
-
-  const SpeechMode(this.value);
-  final String value;
-
-}
+Map<RankName, String> rankedImages = {
+  RankName.bronze: "assets/images/app/bronze.webp",
+  RankName.silver: "assets/images/app/silver.webp",
+  RankName.gold: "assets/images/app/gold.webp",
+  RankName.diamond: "assets/images/app/diamond.webp",
+  RankName.mythic: "assets/images/app/mythic.webp",
+  RankName.legendary: "assets/images/app/legendary.webp",
+  RankName.masters: "assets/images/app/masters.webp",
+  RankName.pro: "assets/images/app/pro.webp",
+};

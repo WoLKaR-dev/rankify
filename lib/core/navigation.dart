@@ -15,9 +15,12 @@
 //    along with this program.  If not, see https://www.gnu.org/licenses/
 
 import 'package:flutter/material.dart';
+import 'package:rankify/core/theme.dart';
 import 'package:rankify/modules/home/home_page.dart';
 import 'package:rankify/modules/pick/pick_page.dart';
+import 'package:rankify/modules/settings/settings_data.dart';
 import 'package:rankify/modules/settings/settings_page.dart';
+import 'package:rankify/modules/settings/settings_service.dart';
 import 'package:wolkarutils/wolkarutils.dart';
 
 class NavigationPage extends StatefulWidget {
@@ -34,6 +37,39 @@ class _NavigationPageState extends State<NavigationPage> {
   List<String> appBarTitles = ["Home", "Ranked", "Settings"];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      showPatch();
+    });
+  }
+
+  void showPatch() {
+    if (SettingsService.instance.patchReaded) return;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(patchTitle),
+        content: Text(patchContent).p(),
+        actions: [
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              SettingsService.instance.update(newLastPatch: patchId);
+            },
+            label: Text("Accept"),
+            icon: Icon(Icons.check),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorPallete.secondary,
+              foregroundColor: colorPallete.onPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     // pages
     List<Widget> pages = [
@@ -48,9 +84,8 @@ class _NavigationPageState extends State<NavigationPage> {
       SettingsPage(),
     ];
 
-
     //ATOMS Appbar
-    final AppBar appbar = AppBar(title: Text(appBarTitles[selectedIndex]),  );
+    final AppBar appbar = AppBar(title: Text(appBarTitles[selectedIndex]));
 
     //ATOMS Nav Rail
     final Widget navRail =

@@ -14,31 +14,14 @@
 //    You should have received a copy of the GNU Affero General Public License
 //    along with this program.  If not, see https://www.gnu.org/licenses/
 
-enum Model {
-  v1("V1"),
-  v2("V2"),
-  v3("V3"),
-  v4("V4");
+/// Inits web Directory
+Future<bool> initBridgeDirectory() async => false; 
 
-  const Model(this.value);
-  final String value;
-}
+/// Writes a web file.
+/// [name] is the required name, and [content] is the string content to write
+/// [ext] is an optional extension.
+Future<bool> writeBridgeFile(String name, String content, String ext) async => false;
 
-enum Optimization {
-  few("Few"),
-  regular("Regular"),
-  personalized("Personalized");
-
-  const Optimization(this.value);
-  final String value;
-}
-
-
-enum SpeechMode {
-  pro("Pro"),
-  aggro("Aggro");
-
-  const SpeechMode(this.value);
-  final String value;
-
-}
+/// Reads a web entry
+/// [name] is the name to read. [ext] is an optional extension.
+Future<String> readBridgeFile(String name, String ext) async => "";

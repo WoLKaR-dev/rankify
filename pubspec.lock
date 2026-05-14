@@ -674,10 +674,10 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: bf304f99a9f796a7c637e79ed07ba628c2040116
+      resolved-ref: "729b9754df35d9205e538bcbd2f540e91047aed5"
       url: "https://github.com/wolkar-dev/wolkarutils.git"
     source: git
-    version: "1.0.9"
+    version: "1.0.10"
   xdg_directories:
     dependency: transitive
     description:

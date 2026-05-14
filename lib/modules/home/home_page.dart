@@ -15,8 +15,10 @@
 //    along with this program.  If not, see https://www.gnu.org/licenses/
 
 import 'package:flutter/material.dart';
+import 'package:rankify/components/brawl_service.dart';
 import 'package:rankify/core/theme.dart';
 import 'package:rankify/modules/home/home_code.dart';
+import 'package:rankify/modules/home/home_data.dart';
 import 'package:rankify/modules/home/home_style.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wolkarutils/wolkarutils.dart';
@@ -32,9 +34,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    //ATOMS Home title
-    final title = Text("Home").h1();
-
     //ATOMS Home card
     final mainCards = Wrap(
       spacing: 10,
@@ -102,10 +101,34 @@ class _HomePageState extends State<HomePage> {
       ),
     );
 
+    //ATOMS Not Authenticated user
+    final List<Widget> notAuthDesign = [Text("Home").h1(), mainCards];
+
+    //ATOMS Authenticated user
+    final List<Widget> authDesign = [
+      Text("Welcome back, ${BrawlService.instance.userData["name"]}").h1(),
+      Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        alignment: WrapAlignment.center,
+        runAlignment: WrapAlignment.center,
+        spacing: 15,
+        children: [
+          SizedBox(width: 100, child: Image.asset(rankedImages[BrawlService.instance.rankName]!)),
+          Text(
+            "${BrawlService.instance.userData["rankedRankName"]}\n${BrawlService.instance.userData["rankedElo"]}",
+          ).h4(bold: true),
+        ],
+      ),
+      mainCards,
+    ];
+
     //LAYOUT Page
     final page = Background(
       padding: EdgeInsets.all(15),
-      child: Scroll(spacing: 15, children: [title, mainCards, disclaimer]),
+      child: Scroll(
+        spacing: 15,
+        children: [...(BrawlService.instance.validId ? authDesign : notAuthDesign), disclaimer],
+      ),
     );
 
     return Scaffold(body: page);

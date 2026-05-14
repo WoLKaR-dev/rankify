@@ -13,11 +13,11 @@
 //
 //    You should have received a copy of the GNU Affero General Public License
 //    along with this program.  If not, see https://www.gnu.org/licenses/
-
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:rankify/modules/settings/settings_service.dart';
 
 /// Singleton designed to keep track of all available brawlers and maps, including
 /// methods to transform data into a format that I can understand.
@@ -31,6 +31,9 @@ class BrawlService {
 
   /// Database maps
   late List<(String id, String image, String name)> _maps;
+
+  /// User data
+  Map<String, dynamic> _userData = {};
 
   /// Singleton isntance
   static final BrawlService _instance = BrawlService._internal();
@@ -80,12 +83,12 @@ class BrawlService {
         }
 
         _brawlers = appBrawlersData;
-        debugPrint('🔨 Brawlers initialized');
+        debugPrint('🔨[Brawl Service] Brawlers initialized');
       } else {
         throw Exception("Unexpected status code: ${response.statusCode}");
       }
     } catch (e) {
-      debugPrint("An error ocurred getting brawlers: $e");
+      debugPrint("❌[Brawl Service] An error ocurred getting brawlers: $e");
     }
   }
 
@@ -123,14 +126,93 @@ class BrawlService {
         }
 
         _maps = brawlMaps;
-        debugPrint('🗺️  Maps initialized');
+        debugPrint('🗺️  [Brawl Service] Maps initialized');
       } else {
         throw Exception("Unexpected status code. ${response.statusCode}");
       }
     } catch (e) {
-      debugPrint('An error occurred loading maps: $e');
+      debugPrint('❌[Brawl Service] An error occurred loading maps: $e');
       _maps = [];
     }
+  }
+
+  /// Initializes player data
+  ///
+  /// Returns if the initialization was successful.
+  Future<bool> initPlayerData() async {
+    try {
+      // get id
+      String id = SettingsService.instance.userId;
+
+      // check id
+      if (id.isEmpty || !id.startsWith("#")) throw Exception("❌ User id is not valid");
+
+      // handle result
+      final result = await http.get(
+        Uri.parse("https://rankify.wolkar-rblx.workers.dev"),
+        headers: {"tag": id.toUpperCase()},
+      );
+
+      if (result.statusCode == 200) {
+        final content = result.body;
+        _userData = jsonDecode(content);
+        debugPrint('✅ [Brawl Service] Brawlers loaded successfully');
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      debugPrint('⭕ [Brawl Service] An error ocurred initting player data: $e');
+      return false;
+    }
+  }
+
+  //==============
+  //============== Methods / Utilities
+  //==============
+
+  /// Get brawler power level
+  ///
+  /// [id] the brawler id to search
+  ///
+  /// Returns the power level, or null if not available
+  int? getBrawlerPowerLevel(String id) {
+    //check if data is empty
+    if (_userData.isEmpty) return null;
+
+    // check if brawlers exist
+    if (!_userData.containsKey("brawlers")) return null;
+
+    // iterate through all brawlers
+    for (final brawler in _userData["brawlers"]) {
+      if (brawler["id"]?.toString() == id) {
+        return brawler["power"];
+      }
+    }
+
+    return null;
+  }
+
+  /// Checks if a brawler is unlocked
+  ///
+  /// [id] is the id of the brawler to check
+  ///
+  /// Returns true if unlocked, or false if not or error
+  bool isBrawlerUnlocked(String id) {
+    // check if data is empty
+    if (_userData.isEmpty) return false;
+
+    // check if brawler key exist
+    if (!_userData.containsKey("brawlers")) return false;
+
+    // iterate through all brawlers
+    for (final brawler in _userData["brawlers"]) {
+      if (brawler["id"]?.toString() == id) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   //==============
@@ -144,9 +226,41 @@ class BrawlService {
   List<(String, String, String)> get brawlers => _brawlers;
 
   /// Game maps
-  List<(String, String, String)> get maps => _maps; 
+  List<(String, String, String)> get maps => _maps;
+
+  /// Returns the user data
+  Map<String, dynamic> get userData => _userData;
 
   //==============
   //============== Getter Functions
   //==============
+
+  /// Returns if id is valid
+  bool get validId {
+    String id = SettingsService.instance.userId;
+    return id.isNotEmpty && id.startsWith("#");
+  }
+
+  /// Returns player rankName
+  RankName get rankName {
+    // Handle errors
+    if (!_userData.containsKey("rankedRankName")) return RankName.bronze;
+
+    // get rank name
+    String rankName = _userData["rankedRankName"];
+
+    return switch (rankName.toLowerCase()) {
+      String s when s.contains("bronze") => RankName.bronze,
+      String s when s.contains("silver") => RankName.silver,
+      String s when s.contains("gold") => RankName.gold,
+      String s when s.contains("diamond") => RankName.diamond,
+      String s when s.contains("mythic") => RankName.mythic,
+      String s when s.contains("legendary") => RankName.legendary,
+      String s when s.contains("masters") => RankName.masters,
+      String s when s.contains("pro") => RankName.pro,
+      _ => RankName.bronze, // El default
+    };
+  }
 }
+
+enum RankName { bronze, silver, gold, diamond, mythic, legendary, masters, pro }

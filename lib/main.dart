@@ -17,6 +17,8 @@
 import 'package:flutter/material.dart';
 import 'package:rankify/components/ai_service.dart';
 import 'package:rankify/components/brawl_service.dart';
+import 'package:rankify/components/data/appdata_service.dart';
+import 'package:rankify/components/data/data_service.dart';
 import 'package:rankify/core/navigation.dart';
 import 'package:rankify/core/theme.dart';
 import 'package:wolkarutils/wolkarutils.dart';
@@ -41,29 +43,69 @@ class MainApp extends StatelessWidget {
 }
 
 /// Main app page
-class MainAppPage extends StatelessWidget {
+class MainAppPage extends StatefulWidget {
   const MainAppPage({super.key});
+
+  @override
+  State<MainAppPage> createState() => _MainAppPageState();
+}
+
+class _MainAppPageState extends State<MainAppPage> {
+  late Future<void> _initFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFuture = _initializeFeatures();
+  }
+
+  Future<void> _initializeFeatures() async {
+    try {
+      // await a little bit
+      await Future.delayed(Duration.zero);
+
+      // init utils
+      if (mounted) {
+        WolkarUtils.instance.initWolkarUtils(context);
+      }
+
+      // Obtain brawlers
+      await BrawlService.instance.initBrawlers();
+
+      // Obtain maps
+      await BrawlService.instance.initMaps();
+
+      // Init AI
+      await AiService.instance.initAi();
+
+      // Init data storage
+      await DataService().initDirectories("Rankify");
+
+      // Load data
+      await AppDataService().loadData();
+
+      // And load user
+      await BrawlService.instance.initPlayerData(); 
+    } catch (e) {
+      debugPrint('An error ocurred: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: () async {
-        WolkarUtils.instance.initWolkarUtils(context);
-
-        // Obtain brawlers
-        await BrawlService.instance.initBrawlers();
-
-        // Obtain maps
-        await BrawlService.instance.initMaps();
-
-        // Init AI
-        await AiService.instance.initAi();
-      }(),
+      future: _initFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           return NavigationPage();
         } else {
           return Scaffold(
-            body: Background(child: Center(child: CircularProgressIndicator())),
+            body: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(color: colorPallete.surfaceContainer),
+              child: Center(child: CircularProgressIndicator()),
+            ),
           );
         }
       },

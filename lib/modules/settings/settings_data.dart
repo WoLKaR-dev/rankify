@@ -30,6 +30,8 @@ const Map<Model, String> modelDescription = {
       "Delta: \n- Calculates real impact of each brawler on your current team. \n- Measures improvement over current draft state. \n- Detects synergies and contextual counters.\n- Reduces dependency over global meta. \n- Varied recommendations. ",
   Model.v3:
       "Strategy: \n- Optimizes both your advantage and enemy denial. \n- Evaluates impact for your team and potential enemy gain. \n- Identifies high-value counters and critical deny picks. \n- Delivers strategic, draft-aware decision making. ",
+  Model.v4:
+      "Contextual: \n- Gives more importance to brawlers with high winrate in the current map. \n- Optimizes both your advantage and enemy denial. \n- Evaluates impact for your team and potential enemy gain. \n- Identifies high-value counters and critical deny picks. \n- Delivers strategic, draft-aware decision making.",
 };
 
 const Map<Optimization, String> optimizationDescription = {
@@ -39,3 +41,8 @@ const Map<Optimization, String> optimizationDescription = {
   Optimization.personalized:
       "Personalized: \n- Calculate all brawlers you want. \n- May slow down some devices.",
 };
+
+const String patchTitle = "Update: 1.4.0";
+const String patchContent =
+    "A new update was released:\n - Added an option to ban brawlers. \n - Added the value list below the prediction. \n - Added new filters: unlocked brawlers & maxed brawlers. \n - Added data persistance. \n\nCheck out the 'Settings' page for more details.";
+const String patchId = "aiIBswmsWiuhd234!23";

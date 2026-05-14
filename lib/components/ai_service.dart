@@ -40,8 +40,8 @@ class AiService {
   /// Cached brawlers mapping
   Map<String, dynamic>? _cachedBrawlersMapping;
 
-
-
+  /// Cached affinity probabilities
+  Map<String, dynamic>? _cachedAffinityChances;
 
   //==============
   //============== Constructors
@@ -59,6 +59,9 @@ class AiService {
     _cachedMapsMapping = jsonDecode(await rootBundle.loadString("assets/data/map_mapping.json"));
     _cachedBrawlersMapping = jsonDecode(
       await rootBundle.loadString("assets/data/brawler_mapping.json"),
+    );
+    _cachedAffinityChances = jsonDecode(
+      await rootBundle.loadString("assets/data/affinity.json"),
     );
   }
 
@@ -112,6 +115,8 @@ class AiService {
   Map<String, dynamic>? get cachedMapsMapping => _cachedMapsMapping;
 
   Map<String, dynamic>? get cachedBrawlersMapping => _cachedBrawlersMapping;
+
+  Map<String, dynamic>? get cachedAffinityChances => _cachedAffinityChances;
 
   //==============
   //============== Getter Functions

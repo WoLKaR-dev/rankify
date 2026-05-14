@@ -120,7 +120,6 @@ class _PickPageState extends State<PickPage> {
                       selected: PickService.instance.selectedMap == map,
                       onTap: () {
                         PickService.instance.update(newSelectedMap: map);
-                        
                       },
                     );
                   },
@@ -128,6 +127,101 @@ class _PickPageState extends State<PickPage> {
               ],
             ),
           ],
+        ),
+      ),
+    ];
+
+    //ATOMS Ban Picker
+    final banPicker = [
+      Align(
+        alignment: Alignment.center,
+        child: SizedBox(
+          width: switch (WolkarUtils.instance.screenSize) {
+            ScreenSize.small || ScreenSize.regular => double.infinity,
+            _ => MediaQuery.sizeOf(context).width * 0.5,
+          },
+          child: Material(
+            child: ExpansionTile(
+              shape: Border.all(color: Colors.transparent),
+              title: Text("Bans").h6(),
+              initiallyExpanded: SettingsService.instance.bansExpanded,
+              children: [
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  runAlignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runSpacing: 5,
+                  spacing: 5,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 5,
+                      children: List.generate(3, (index) {
+                        final ban = PickService.instance.bans[index];
+                        return GestureDetector(
+                          child: PickedBrawlerCard(
+                            onLongTap: () {
+                              List<(String, String, String)?> newBans = PickService.instance.bans;
+                              newBans[index] = null;
+                              PickService.instance.update(newBans: newBans);
+                            },
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BrawlerSelectionPage(
+                                    filterController: PickService.instance.controller,
+                                  ),
+                                ),
+                              ).then((value) async {
+                                List<(String, String, String)?> newBans = PickService.instance.bans;
+                                newBans[index] = value;
+                                PickService.instance.update(newBans: newBans);
+                              });
+                            },
+                            brawler: ban,
+                            isAlly: false,
+                          ),
+                        );
+                      }),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 5,
+                      children: List.generate(3, (index) {
+                        final ban = PickService.instance.bans[index + 3];
+                        return GestureDetector(
+                          child: PickedBrawlerCard(
+                            onLongTap: () {
+                              List<(String, String, String)?> newBans = PickService.instance.bans;
+                              newBans[index + 3] = null;
+                              PickService.instance.update(newBans: newBans);
+                            },
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BrawlerSelectionPage(
+                                    filterController: PickService.instance.controller,
+                                  ),
+                                ),
+                              ).then((value) async {
+                                List<(String, String, String)?> newBans = PickService.instance.bans;
+                                newBans[index + 3] = value;
+                                PickService.instance.update(newBans: newBans);
+                              });
+                            },
+                            brawler: ban,
+                            isAlly: false,
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     ];
@@ -150,7 +244,14 @@ class _PickPageState extends State<PickPage> {
                 return GestureDetector(
                   child: Column(
                     children: [
-                      Text("Ally ${index + 1}").h6(color: Colors.blueAccent),
+                      Row(
+                        children: [
+                          Text("Ally ${(index + -3).abs()}").h6(color: Colors.blueAccent),
+                          (index - 3).abs() == 1
+                              ? Icon(Icons.military_tech, color: Colors.blueAccent)
+                              : SizedBox(),
+                        ],
+                      ),
                       PickedBrawlerCard(
                         onTap: () {
                           Navigator.push(
@@ -215,7 +316,14 @@ class _PickPageState extends State<PickPage> {
                         brawler: brawler,
                         isAlly: false,
                       ),
-                      Text("Enemy ${(index + -3).abs()}").h6(color: Colors.redAccent),
+                      Row(
+                        children: [
+                          Text("Red ${(index + 1).abs()}").h6(color: Colors.redAccent),
+                          (index + 1) == 1
+                              ? Icon(Icons.military_tech, color: Colors.redAccent)
+                              : SizedBox(),
+                        ],
+                      ),
                     ],
                   ),
                 );
@@ -294,7 +402,7 @@ class _PickPageState extends State<PickPage> {
           child: ExpansionTile(
             shape: BoxBorder.all(color: Colors.transparent),
             title: Text("See all data").h5(),
-            initiallyExpanded: true,
+            initiallyExpanded: SettingsService.instance.allDataExpanded,
             children: [
               Table(
                 border: TableBorder.all(color: colorPallete.outline),
@@ -362,6 +470,7 @@ class _PickPageState extends State<PickPage> {
               ),
             ],
           ),
+          ...banPicker,
           ...teamPicker,
           ...runtimePredictionsSection,
           SizedBox(height: 75),

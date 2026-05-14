@@ -29,6 +29,8 @@ class PickService {
   /// Selected map
   (String, String, String)? _selectedMap;
 
+  List<(String, String, String)?> _bans = List.generate(6, (index) => null); 
+
   /// Allies
   List<(String, String, String)?> _allies = List.generate(3, (index) => null);
 
@@ -57,10 +59,12 @@ class PickService {
     (String, String, String)? newSelectedMap,
     List<(String, String, String)?>? newAllies,
     List<(String, String, String)?>? newEnemies,
+    List<(String, String, String)?>? newBans,
   }) async {
     _selectedMap = newSelectedMap ?? _selectedMap;
     _allies = newAllies ?? _allies;
     _enemies = newEnemies ?? _enemies;
+    _bans = newBans ?? _bans;
     _controller.text = "";
     PredictionService.instance.predictGame();
     _notifier.notify();
@@ -71,6 +75,7 @@ class PickService {
     _selectedMap = null;
     _allies = List.generate(3, (index) => null);
     _enemies = List.generate(3, (index) => null);
+    _bans = List.generate(6, (index) => null);
     _controller.text = "";
     _notifier.notify();
   }
@@ -93,6 +98,9 @@ class PickService {
 
   /// Current enemies
   List<(String, String, String)?> get enemies => _enemies;
+
+  /// Current bans
+  List<(String, String, String)?> get bans => _bans;
 
   /// Controller
   TextEditingController get controller => _controller;
