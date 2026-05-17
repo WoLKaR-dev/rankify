@@ -22,6 +22,8 @@ import aiohttp
 import sqlite3
 import hashlib
 import pandas as pd
+import gzip
+import shutil
 
 #NOTE: Remember to comment if using on a server or uncomment if working locally. Both lines
 # from dotenv import load_dotenv #
@@ -29,10 +31,14 @@ import pandas as pd
 
 
 # SETTINGS:
-matches_limit = 300000
-counter_limit = 200000
-affinity_limit = 100000
+matches_limit = 1000000
+counter_limit = 1000000
+affinity_limit = 1000000
 
+
+# =====
+# Flow Related
+# =====
 
 class Metronome:
     """Acts as a metronome to add api call rate limit."""
@@ -55,6 +61,21 @@ class Metronome:
             await asyncio.sleep(waitTime)
 
 
+# =====
+# Database Related
+# =====
+
+def compress_db(input_name, output_name): 
+    if os.path.exists(input_name): 
+        with open(input_name, 'rb') as f_in: 
+            with gzip.open(output_name, 'wb') as f_out: 
+                shutil.copyfileobj(f_in, f_out)
+
+def uncompress_db(input_name, output_name): 
+    if os.path.exists(input_name):
+        with gzip.open(input_name, 'rb') as f_in:
+            with open(output_name, 'wb') as f_out: 
+                shutil.copyfileobj(f_in, f_out)
 
 # Required data
 token = os.getenv("BS_API_KEY")  # gets api key
@@ -62,27 +83,34 @@ header = {  # define header
     "Authorization": f"Bearer {token}",
     "Accept": "application/json",
 }
+base_url = "https://bsproxy.royaleapi.dev/v1" # if working local, change to: https://api.brawlstars.com/v1 
 
 # Limiters
-sem = asyncio.Semaphore(10)  # creates async sem
-rithm = Metronome(0.11)  # ~ 9 per second
+sem = asyncio.Semaphore(25)  # creates async sem
+rithm = Metronome(0.06)  # ~ 9 per second
 
 # Database related
+uncompress_db("matches.db.gz", "matches.db")
+uncompress_db("affinity.db.gz", "affinity.db")
+uncompress_db("counter.db.gz", "counter.db") # make all conversions
+
 matches_conn = sqlite3.connect("matches.db")  # gets matches database
 affinity_conn = sqlite3.connect("affinity.db")  # gets affinity database
 counter_conn = sqlite3.connect("counter.db")  # gets counter database
-matches_csv_path = "matches.csv"  # just matches csv
-affinity_csv_path = "affinity.csv"  # affinity csv file
-counter_csv_path = "counter.csv"  # counter csv file
 matches_writer = matches_conn.cursor()  # creates matches cursor
 affinity_writer = affinity_conn.cursor()  # creates affinity cursor
 counter_writer = counter_conn.cursor()  # creates counter cursor
+
+matches_csv_path = "matches.csv.gz"  # just matches csv
+affinity_csv_path = "affinity.csv.gz"  # affinity csv file
+counter_csv_path = "counter.csv.gz"  # counter csv file
 
 
 # Runtime data
 matches_data = []  # here we add each battle data
 affinity_data = []  # add here affinity data
 counter_data = []  # and here counter data
+
 
 # =====
 # Main Workflow
@@ -150,10 +178,14 @@ def getRankingPlayers():
         "ro",  # Romania
         "ca",  # Canada
         "nl",  # Netherlands
+        "br",  # Brazil
+        "cz",  # Czech Republic
+        "fi",  # Finland
+        "sg",  # Singapore
     ]  # country codes to study
     for code in country_codes:
         result = requests.get(
-            f"https://bsproxy.royaleapi.dev/v1/rankings/{code}/players", headers=header
+            f"{base_url}/rankings/{code}/players", headers=header
         )  # result of the call
         if result.status_code == 200:  # status_code == 200 means success
             players.extend(result.json().get("items", []))
@@ -171,7 +203,7 @@ async def getPlayerBattleLog_async(session, tag):
     """
     tag_url = tag.replace("#", "%23")  # replaces tag
 
-    url = f"https://bsproxy.royaleapi.dev/v1/players/{tag_url}/battlelog"  # creates url
+    url = f"{base_url}/players/{tag_url}/battlelog"  # creates url
 
     async with session.get(url, headers=header) as response:  # waits for the response
         if response.status == 200:
@@ -497,6 +529,7 @@ def saveAffinity():
         affinity_writer.execute("DROP TABLE affinity")
         affinity_writer.execute("ALTER TABLE affinity_tmp RENAME TO affinity")
         affinity_conn.commit()
+        affinity_conn.execute("VACUUM")
 
     except Exception as e:
         affinity_conn.rollback()
@@ -515,6 +548,12 @@ def saveAffinity():
 
     # close connection
     affinity_writer.close()
+
+    # compress data
+    compress_db("affinity.db", "affinity.db.gz")
+
+    # delete old db
+    os.remove("affinity.db")
 
 
 def saveCounter():
@@ -562,6 +601,7 @@ def saveCounter():
         counter_writer.execute("DROP TABLE counter")
         counter_writer.execute("ALTER TABLE counter_tmp RENAME TO counter")
         counter_conn.commit()
+        counter_conn.execute("VACUUM")
 
     except Exception as e:
         counter_conn.rollback()
@@ -580,6 +620,12 @@ def saveCounter():
 
     # close connection
     counter_writer.close()
+
+    # compress data
+    compress_db("counter.db", "counter.db.gz")
+
+    # delete old db
+    os.remove("counter.db")
 
 
 def saveMatches():
@@ -627,6 +673,7 @@ def saveMatches():
         matches_writer.execute("DROP TABLE matches")
         matches_writer.execute("ALTER TABLE matches_tmp RENAME TO matches")
         matches_conn.commit()
+        matches_conn.execute("VACUUM")
 
     except Exception as e:
         matches_conn.rollback()
@@ -645,6 +692,13 @@ def saveMatches():
 
     # close connection
     matches_writer.close()
+
+    # compress data
+    compress_db("matches.db", "matches.db.gz")
+
+    # delete old db
+    os.remove("matches.db")
+
 
 
 if __name__ == "__main__":
