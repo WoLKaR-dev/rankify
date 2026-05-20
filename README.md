@@ -6,9 +6,9 @@ Welcome to this new section. Here you will follow up step-to-step instructions t
 
 Here you will find 3 main files:
 
-- `affinity.db`: Which is a database containing registers of brawlers matches in a specific map.
-- `counter.db`: Contains different battles 1v1 direct match-ups (e.g. Shelly vs Frank)
-- `matches.db`: Full data of all gathered matches
+- `affinity.db.gz`: Which is a compressed database containing registers of brawlers matches in a specific map.
+- `counter.db.gz`: Contains different battles 1v1 direct match-ups (e.g. Shelly vs Frank)
+- `matches.db.gz`: Full data of all gathered matches
 
 And last but not least: `data_gather.py` which gets data from Supercell's API
 
@@ -16,7 +16,7 @@ And last but not least: `data_gather.py` which gets data from Supercell's API
 
 Other files such as `requirements.txt` are necessary for the main execution: contains the required packages for GitHub Actions to load. You will need to import these requirements too to make the python script to work. Don't worry, you have detailed instructions on the next section.
 
-Files called `matches.csv`, `affinity.csv` and `counter.csv` are files generated as the result of the correct execution of `data_gather.py`. These are the files you need to train our AI model. Once you got these files, you can go back to the `stable` branch and continue your `README.md` process.
+Files called `matches.csv.gz`, `affinity.csv.gz` and `counter.csv.gz` are files generated as the result of the correct execution of `data_gather.py`. These are the files you need to train our AI model. Once you got these files, you can go back to the `stable` branch and continue your `README.md` process.
 
 # How can I run this on my PC?
 
@@ -38,7 +38,7 @@ BS_API_KEY=[API_KEY]
 
 Where:
 
-* `[BS_API_KEY]` is the key you obtained (without `[]`).
+* `[API_KEY]` is the key you obtained (without `[]`).
 
 > Important: this `.env` file will not upload to git since is checked out in `.gitignore`. If you want this not to happen, you can delete the line `.env` on previous mentioned file.
 
@@ -95,17 +95,16 @@ python data_gather.py
 python3 data_gather.py
 ```
 
-> Once this scripts ends, you should have the required files: `matches.csv`, `affinity.csv` and `counter.csv`
+> Once this scripts ends, you should have the required files: `matches.csv.gz`, `affinity.csv.gz` and `counter.csv.gz`
 
-Of course, this script is still optimizable but this basic version works, so we will keep this at least short-term. 
+Of course, this script is still optimizable but this basic version works, so we will keep this at least short-term.
 
 # Do I have to execute this by myself?
 
-In fact, no! Me and GitHub already make this process for you. You can go to [releases](https://github.com/WoLKaR-dev/rankify/releases), where you will find the necessary files already exported. These files are updated every ~ 3 hours.
+In fact, no! Me and GitHub already make this process for you. You can go to [releases](https://github.com/WoLKaR-dev/rankify/releases), where you will find the necessary files already exported. These files are updated every ~ 6 hours.
 
 # Now I have the files, what follows next?
 
 Now, you can go back to [train model section](https://github.com/WoLKaR-dev/rankify?tab=readme-ov-file#training-ai-model). There you will be able to train your model with our data files.
 
 Thanks for reading!
-

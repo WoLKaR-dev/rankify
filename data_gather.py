@@ -223,6 +223,10 @@ async def process_player(session, player, index):
         log = await getPlayerBattleLog_async(session, tag)  # gets log
         print(f"Gathering from: n{index} - {name}")
 
+    if log is None: 
+        return new_matches
+
+
     for battle in log:
         try:
             if battle.get("battle", {}).get("type") == "soloRanked":
@@ -234,6 +238,7 @@ async def process_player(session, player, index):
                     new_matches += 1
         except Exception:
             continue
+
     return new_matches
 
 async def main():
