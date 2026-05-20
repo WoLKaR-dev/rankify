@@ -63,7 +63,7 @@ jobs:
           chmod 600 ~/.kaggle/access_token
           
           mkdir -p kaggle_data
-          cp matches.csv kaggle_data/
+          cp matches.csv.gz kaggle_data/
 
           echo '{"id" : "wolkar/matches"}' > kaggle_data/dataset-metadata.json
       #

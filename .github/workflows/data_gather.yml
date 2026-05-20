@@ -65,9 +65,9 @@ jobs:
         with: 
           name: gathered-data
           path: |
-            matches.csv
-            affinity.csv
-            counter.csv
+            matches.csv.gz
+            affinity.csv.gz
+            counter.csv.gz
 
       #
       # Release public data
@@ -81,9 +81,9 @@ jobs:
             This release is updated hourly. 
             Last sync: ${{ github.event.repository.updated_at }}
           files: |
-            matches.csv
-            affinity.csv
-            counter.csv
+            matches.csv.gz
+            affinity.csv.gz
+            counter.csv.gz
           make_latest: true
           overwrite: true
         env:
