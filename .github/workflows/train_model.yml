@@ -82,30 +82,42 @@ jobs:
       - name: Pulling and running notebook # pull and run notebook to update data on kaggle
         run: |
           kaggle kernels pull wolkar/rankify -p ./.run_dir --metadata
-          cd ./.run_dir
-          kaggle kernels push 
-          cd ..
+          
+          # Hacemos el push apuntando directamente a la carpeta sin movernos de la raíz
+          # Usamos '|| true' por si la CLI da error de streaming al principio
+          kaggle kernels push -p ./.run_dir || true
           
           echo "Waiting for notebook to finish running..."
+          sleep 15
+          
           while true; do
            
-            RAW_STATUS=$(kaggle kernels status wolkar/rankify)
+            RAW_STATUS=$(kaggle kernels status wolkar/rankify || echo "KAGGLE_API_ERROR")
             echo "Raw response: $RAW_STATUS"
-
-            if echo "$RAW_STATUS" | grep -iq "COMPLETE"; then
+          
+            if echo "$RAW_STATUS" | grep -iq "KAGGLE_API_ERROR"; then
+              echo "La API de Kaggle no respondió correctamente o está saturada. Reintentando..."
+            
+            elif echo "$RAW_STATUS" | grep -iq "Unauthenticated"; then
+              echo "Error crítico: Las credenciales de Kaggle fallaron."
+              exit 1
+            
+            elif echo "$RAW_STATUS" | grep -iq "COMPLETE"; then
               echo "¡Notebook finalizado con éxito!"
               break
-            fi
-
-            if echo "$RAW_STATUS" | grep -iqE "ERROR|CANCELLED"; then
-              echo "Error: El notebook ha fallado o fue cancelado en Kaggle."
+            
+            elif echo "$RAW_STATUS" | grep -iqE "ERROR|CANCELLED"; then
+              echo "Error real: El notebook ha fallado o fue cancelado en Kaggle."
               exit 1
+              
+            else
+              echo "El notebook sigue procesándose en Kaggle..."
             fi
-
-            echo "Aún procesando..."
+          
+            echo "Esperando 30 segundos..."
             sleep 30
           done
-
+          
           echo "Descargando resultados..."
           kaggle kernels output wolkar/rankify -p ./results/
         env:
