@@ -18,10 +18,10 @@ name: Train Model
 
 on: 
   workflow_dispatch:
-  workflow_run: 
-    workflows: ["Data gather"]
-    types:
-      - completed
+  #workflow_run: 
+  #  workflows: ["Data gather"]
+  #  types:
+  #    - completed
 
 jobs: 
   train: 
@@ -79,12 +79,10 @@ jobs:
       #
       # Pulling and running notebook
       #
-      - name: Pulling and running notebook # pull and run notebook to update data on kaggle
+      - name: Pulling and running notebook 
         run: |
           kaggle kernels pull wolkar/rankify -p ./.run_dir --metadata
           
-          # Hacemos el push apuntando directamente a la carpeta sin movernos de la raíz
-          # Usamos '|| true' por si la CLI da error de streaming al principio
           kaggle kernels push -p ./.run_dir || true
           
           echo "Waiting for notebook to finish running..."
@@ -96,29 +94,29 @@ jobs:
             echo "Raw response: $RAW_STATUS"
           
             if echo "$RAW_STATUS" | grep -iq "KAGGLE_API_ERROR"; then
-              echo "La API de Kaggle no respondió correctamente o está saturada. Reintentando..."
+              echo "Kaggle API is saturated. Retrying..."
             
             elif echo "$RAW_STATUS" | grep -iq "Unauthenticated"; then
-              echo "Error crítico: Las credenciales de Kaggle fallaron."
+              echo "Critical error: User is not authenticated"
               exit 1
             
             elif echo "$RAW_STATUS" | grep -iq "COMPLETE"; then
-              echo "¡Notebook finalizado con éxito!"
+              echo "Notebook finished running."
               break
             
             elif echo "$RAW_STATUS" | grep -iqE "ERROR|CANCELLED"; then
-              echo "Error real: El notebook ha fallado o fue cancelado en Kaggle."
+              echo "Notebook failed or was cancelled in Kaggle. "
               exit 1
               
             else
-              echo "El notebook sigue procesándose en Kaggle..."
+              echo "Notebook still processing. "
             fi
           
-            echo "Esperando 30 segundos..."
+            echo "Waiting 30 seconds. "
             sleep 30
           done
           
-          echo "Descargando resultados..."
+          echo "Downloading results..."
           kaggle kernels output wolkar/rankify -p ./results/
         env:
           KAGGLE_USERNAME: "wolkar"

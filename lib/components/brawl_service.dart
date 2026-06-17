@@ -55,7 +55,7 @@ class BrawlService {
   Future<void> initBrawlers() async {
     try {
       final List<(String, String, String)> appBrawlersData = [];
-      var response = await http.get(Uri.parse("https://api.brawlify.com/v1/brawlers"));
+      var response = await http.get(Uri.parse("https://corsproxy.io/?https://api.brawlify.com/v1/brawlers"));
 
       // handle when call was successful
       if (response.statusCode == 200) {
@@ -98,7 +98,7 @@ class BrawlService {
   Future<void> initMaps() async {
     try {
       final List<(String, String, String)> brawlMaps = [];
-      final response = await http.get(Uri.parse("https://api.brawlify.com/v1/maps"));
+      final response = await http.get(Uri.parse("https://corsproxy.io/?https://api.brawlify.com/v1/maps"));
 
       //if the call was successful
       if (response.statusCode == 200) {
