@@ -28867,7 +28867,7 @@ $S:2}
 A.ayj.prototype={
 $1(a){var s=A.dc().b
 s=s==null?null:s.canvasKitBaseUrl
-return(s==null?"https://www.gstatic.com/flutter-canvaskit/c416acfeb8126e097f758c664aaa3da929e27da0/":s)+a},
+return(s==null?"https://www.gstatic.com/flutter-canvaskit/77e2e94772b6eb43759e34ed1ad7da4674e19cab/":s)+a},
 $S:86}
 A.Nb.prototype={
 gA(a){var s=this.a
@@ -92364,7 +92364,7 @@ var $async$rw=A.N(function(a,b){if(a===1){p.push(b)
 s=q}for(;;)switch(s){case 0:q=3
 n=A.b([],t.iT)
 s=6
-return A.E(A.aDc(A.eL("https://api.brawlify.com/v1/brawlers",0,null),null),$async$rw)
+return A.E(A.aDc(A.eL("https://corsproxy.io/?https://api.brawlify.com/v1/brawlers",0,null),null),$async$rw)
 case 6:m=b
 s=m.b===200?7:9
 break
@@ -92410,7 +92410,7 @@ var $async$oT=A.N(function(a3,a4){if(a3===1){p.push(a4)
 s=q}for(;;)switch(s){case 0:q=3
 n=A.b([],t.iT)
 s=6
-return A.E(A.aDc(A.eL("https://api.brawlify.com/v1/maps",0,null),null),$async$oT)
+return A.E(A.aDc(A.eL("https://corsproxy.io/?https://api.brawlify.com/v1/maps",0,null),null),$async$oT)
 case 6:m=a4
 s=m.b===200?7:9
 break
