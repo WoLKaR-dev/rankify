@@ -15,7 +15,7 @@
 #    along with this program.  If not, see https://www.gnu.org/licenses/
 
 name: Data gather
-on: 
+on:
   schedule:
     - cron: 0 */6 * * * # each 6h
   workflow_dispatch:
@@ -97,6 +97,6 @@ jobs:
           git config --global user.name "Auto Gather"
           git config --global user.email "action@github.com"
           git add . 
-          git commit -m "New data added"
-          git push
+          git commit --amend --no-edit
+          git push origin gather --force 
 

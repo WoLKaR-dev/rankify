@@ -14,7 +14,7 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see https://www.gnu.org/licenses/
 
-name: Main Push
+name: Stable Push
 
 on:
   push:
@@ -22,12 +22,13 @@ on:
     - stable
   workflow_dispatch:
 
-
 jobs:
-  merge_branches:
+  build_web:
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
+
     steps:
     #
     # Get code
@@ -38,13 +39,27 @@ jobs:
         token: ${{ secrets.GIT_TOKEN }}
 
     #
-    # Merge branches
+    # Install flutter
     #
-    - name: Merge branches
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git fetch origin daily
-        git branch -f daily stable
-        git switch daily
-        git push origin daily --force
+    - name: Install flutter 
+      uses: subosito/flutter-action@v2 
+      with: 
+        channel: stable 
+
+    #
+    # Build web app 
+    #
+    - name: Build web app 
+      run: flutter build web --release --base-href /rankify/ 
+
+    #
+    # Push to web branch
+    #
+    - name: Push to web branch
+      uses: JamesIves/github-pages-deploy-action@v4 
+      with: 
+        folder: build/web 
+        branch: web 
+        token: ${{ secrets.GITHUB_TOKEN }} 
+        single-commit: true 
+        commit-message: "Web Update"
