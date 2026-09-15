@@ -1,0 +1,9 @@
+.dart_tool
+.flutter-plugins-dependencies
+python/
+build/
+build
+.venv
+load_data.csv
+.env
+test/
